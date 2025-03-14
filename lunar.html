@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Lunar Stereoscopic Viewer</title>
+    <style>
+        body { background: black; color: white; font-family: Arial; text-align: center; }
+        .stereo-container { display: flex; justify-content: center; gap: 10px; margin: 20px 0; }
+        .stereo-image { max-width: 45%; border: 1px solid #444; }
+        .controls { margin: 20px 0; }
+        input { margin: 0 10px; }
+    </style>
+</head>
+<body>
+    <h1>Lunar Surface Stereoscope</h1>
+    
+    <div class="controls">
+        <label>Depth Effect: 
+            <input type="range" id="depthFactor" min="0" max="50" value="15">
+        </label>
+    </div>
+    
+    <div class="stereo-container"> <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <title>Lunar Stereoscopic Viewer</title>
+            <style>
+                body { background: black; color: white; font-family: Arial; text-align: center; }
+                .stereo-container { display: flex; justify-content: center; gap: 10px; margin: 20px 0; }
+                .stereo-image { max-width: 45%; border: 1px solid #444; }
+                .controls { margin: 20px 0; }
+                input { margin: 0 10px; }
+            </style>
+        </head>
+        <body>
+            <h1>Lunar Surface Stereoscope</h1>
+            
+            <div class="controls">
+                <label>Depth Effect: 
+                    <input type="range" id="depthFactor" min="0" max="50" value="15">
+                </label>
+            </div>
+            
+            <div class="stereo-container">
+                <img src="C:\Users\frank\Downloads\milky-way-lr-3-9" alt="Left eye view" class="stereo-image" id="leftImage">
+                <img id="rightImage" alt="Right eye view" class="stereo-image">
+            </div>
+            
+            <script>
+                // Replace 'your-lunar-image.jpg' with the path to your lunar image
+                const leftImage = document.getElementById('leftImage');
+                const rightImage = document.getElementById('rightImage');
+                const depthSlider = document.getElementById('depthFactor');
+                
+                // Process the image when it loads
+                leftImage.onload = processImage;
+                depthSlider.oninput = processImage;
+                
+                function processImage() {
+                    const depth = parseInt(depthSlider.value);
+                    
+                    // Create canvas for processing
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = leftImage.naturalWidth;
+                    canvas.height = leftImage.naturalHeight;
+                    ctx.drawImage(leftImage, 0, 0);
+                    
+                    // Get image data for processing
+                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    const rightImageData = new ImageData(canvas.width, canvas.height);
+                    
+                    // Apply displacement based on brightness
+                    for (let y = 0; y < canvas.height; y++) {
+                        for (let x = 0; x < canvas.width; x++) {
+                            const idx = (y * canvas.width + x) * 4;
+                            
+                            // Calculate brightness
+                            const brightness = (imageData.data[idx] + imageData.data[idx + 1] + imageData.data[idx + 2]) / 3;
+                            
+                            // Calculate displacement
+                            const displacement = Math.round((brightness / 255) * depth);
+                            
+                            // Get source pixel
+                            const sourceX = Math.max(0, Math.min(canvas.width - 1, x - displacement));
+                            const sourceIdx = (y * canvas.width + sourceX) * 4;
+                            
+                            // Copy pixel data
+                            rightImageData.data[idx] = imageData.data[sourceIdx];
+                            rightImageData.data[idx + 1] = imageData.data[sourceIdx + 1];
+                            rightImageData.data[idx + 2] = imageData.data[sourceIdx + 2];
+                            rightImageData.data[idx + 3] = 255;
+                        }
+                    }
+                    
+                    // Put the processed image data back
+                    ctx.putImageData(rightImageData, 0, 0);
+                    rightImage.src = canvas.toDataURL();
+                }
+            </script>
+        </body>
+        </html>
+        <img src="C:\Users\frank\Downloads\milky-way-lr-3-9" alt="Left eye view" class="stereo-image" id="leftImage">
+        <img id="rightImage" alt="Right eye view" class="stereo-image">
+    </div>
+    
+    <script>
+        // Replace 'your-lunar-image.jpg' with the path to your lunar image
+        const leftImage = document.getElementById('leftImage');
+        const rightImage = document.getElementById('rightImage');
+        const depthSlider = document.getElementById('depthFactor');
+        
+        // Process the image when it loads
+        leftImage.onload = processImage;
+        depthSlider.oninput = processImage;
+        
+        function processImage() {
+            const depth = parseInt(depthSlider.value);
+            
+            // Create canvas for processing
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = leftImage.naturalWidth;
+            canvas.height = leftImage.naturalHeight;
+            ctx.drawImage(leftImage, 0, 0);
+            
+            // Get image data for processing
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const rightImageData = new ImageData(canvas.width, canvas.height);
+            
+            // Apply displacement based on brightness
+            for (let y = 0; y < canvas.height; y++) {
+                for (let x = 0; x < canvas.width; x++) {
+                    const idx = (y * canvas.width + x) * 4;
+                    
+                    // Calculate brightness
+                    const brightness = (imageData.data[idx] + imageData.data[idx + 1] + imageData.data[idx + 2]) / 3;
+                    
+                    // Calculate displacement
+                    const displacement = Math.round((brightness / 255) * depth);
+                    
+                    // Get source pixel
+                    const sourceX = Math.max(0, Math.min(canvas.width - 1, x - displacement));
+                    const sourceIdx = (y * canvas.width + sourceX) * 4;
+                    
+                    // Copy pixel data
+                    rightImageData.data[idx] = imageData.data[sourceIdx];
+                    rightImageData.data[idx + 1] = imageData.data[sourceIdx + 1];
+                    rightImageData.data[idx + 2] = imageData.data[sourceIdx + 2];
+                    rightImageData.data[idx + 3] = 255;
+                }
+            }
+            
+            // Put the processed image data back
+            ctx.putImageData(rightImageData, 0, 0);
+            rightImage.src = canvas.toDataURL();
+        }
+    </script>
+</body>
+</html>

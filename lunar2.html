@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Lunar Stereoscopic Viewer</title>
+    <style>
+        body { 
+            background: black; 
+            color: white; 
+            font-family: Arial; 
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+        .stereo-container { 
+            display: flex; 
+            justify-content: center; 
+            gap: 10px; 
+            margin: 20px 0;
+            width: 100%;
+        }
+        .stereo-image { 
+            max-width: 45%; 
+            max-height: 80vh;
+            object-fit: contain;
+            border: 1px solid #444; 
+        }
+        .controls { 
+            margin: 20px 0; 
+        }
+        input { 
+            margin: 0 10px; 
+        }
+        .instructions {
+            max-width: 600px;
+            margin: 0 auto 20px auto;
+            font-size: 14px;
+        }
+        .file-input {
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Lunar Surface Stereoscope</h1>
+    
+    <div class="instructions">
+        <p>Cross your eyes slightly until the two images merge into a single 3D image in the center.</p>
+    </div>
+    
+    <div class="file-input">
+        <input type="file" id="imageInput" accept="image/*">
+        <p><small>Select your lunar image (e.g., milky-way-lr-3-9.jpg)</small></p>
+    </div>
+    
+    <div class="controls">
+        <label>Depth Effect: 
+            <input type="range" id="depthFactor" min="0" max="50" value="15">
+            <span id="depthValue">15</span>
+        </label>
+    </div>
+    
+    <div class="stereo-container">
+        <img alt="Left eye view" class="stereo-image" id="leftImage">
+        <img alt="Right eye view" class="stereo-image" id="rightImage">
+    </div>
+    
+    <script>
+        const leftImage = document.getElementById('leftImage');
+        const rightImage = document.getElementById('rightImage');
+        const depthSlider = document.getElementById('depthFactor');
+        const depthValue = document.getElementById('depthValue');
+        const imageInput = document.getElementById('imageInput');
+        
+        // Update depth value display
+        depthSlider.oninput = function() {
+            depthValue.textContent = this.value;
+            processImage();
+        };
+        
+        // Handle file selection
+        imageInput.onchange = function(e) {
+            if (e.target.files && e.target.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const originalImage = new Image();
+                    originalImage.onload = function() {
+                        leftImage.src = originalImage.src;
+                        processImage();
+                    };
+                    originalImage.src = event.target.result;
+                };
+                reader.readAsDataURL(e.target.files[0]);
+            }
+        };
+        
+        function processImage() {
+            if (!leftImage.complete || !leftImage.src) return;
+            
+            const depth = parseInt(depthSlider.value);
+            
+            // Create canvas for processing
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = leftImage.naturalWidth;
+            canvas.height = leftImage.naturalHeight;
+            ctx.drawImage(leftImage, 0, 0);
+            
+            // Get image data for processing
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const rightImageData = ctx.createImageData(canvas.width, canvas.height);
+            
+            // Apply displacement based on brightness
+            for (let y = 0; y < canvas.height; y++) {
+                for (let x = 0; x < canvas.width; x++) {
+                    const idx = (y * canvas.width + x) * 4;
+                    
+                    // Calculate brightness (grayscale value)
+                    const brightness = (imageData.data[idx] + imageData.data[idx + 1] + imageData.data[idx + 2]) / 3;
+                    
+                    // Calculate displacement based on brightness
+                    const displacement = Math.round((brightness / 255) * depth);
+                    
+                    // Get the source pixel with displacement
+                    const sourceX = Math.max(0, Math.min(canvas.width - 1, x - displacement));
+                    const sourceIdx = (y * canvas.width + sourceX) * 4;
+                    
+                    // Copy pixel data
+                    rightImageData.data[idx] = imageData.data[sourceIdx];
+                    rightImageData.data[idx + 1] = imageData.data[sourceIdx + 1];
+                    rightImageData.data[idx + 2] = imageData.data[sourceIdx + 2];
+                    rightImageData.data[idx + 3] = 255; // Full opacity
+                }
+            }
+            
+            // Output the processed right image
+            ctx.putImageData(rightImageData, 0, 0);
+            rightImage.src = canvas.toDataURL();
+        }
+    </script>
+</body>
+</html>
