@@ -10,24 +10,33 @@ function fetchSheetData() {
     fetch(url)
         .then(response => response.json())
         .then(data => {
-            console.log("API Response:", data);
+            console.log("Raw Data from Google Sheets:", data); // Debugging API response
+            
             if (data && data.values) {
                 renderContent(data.values);
             } else {
                 console.error('Error: data.values is undefined.');
-                document.getElementById('content').innerHTML = '<p>Error: Unable to load content. See console for details.</p>';
+                document.getElementById('content').innerHTML = '<p style="color:red;">Error: Unable to load content. See console for details.</p>';
             }
         })
-        .catch(error => console.error('Error fetching data:', error));
+        .catch(error => {
+            console.error('Error fetching data:', error);
+            document.getElementById('content').innerHTML = `<p style="color:red;">Error fetching data: ${error}</p>`;
+        });
 }
 
 function renderContent(data) {
     const contentDiv = document.getElementById('content');
     let html = '';
 
+    // Debug: Print raw data
+    console.log("Processed Data for Rendering:", data);
+
     if (data && data.length > 1) {
         for (let i = 1; i < data.length; i++) {
-            const row = data[i];
+            const row = data[i] || [];  // Ensure row is defined
+            const field = row[0] || "Unknown Field";  // Handle missing field
+            const value = row[1] || "No value provided";  // Handle missing value
 
             switch (field) {
                 case 'Product Name': html += `<h1>${value}</h1>`; break;
@@ -41,7 +50,7 @@ function renderContent(data) {
                 case 'Pros': html += `<h2>Pros</h2><p>${value}</p>`; break;
                 case 'Cons': html += `<h2>Cons</h2><p>${value}</p>`; break;
                 case 'Frequently Asked Questions': html += `<h2>Frequently Asked Questions</h2><p>${value}</p>`; break;
-                case 'Image URL': html += `<h2>Image URL</h2><img src="${value}" alt="Product Image" style="max-width:100%; height:auto;">`; break;
+                case 'Image URL': html += `<h2>Image</h2><img src="${value}" alt="Product Image" style="max-width:100%; height:auto;">`; break;
                 case 'Terms and Conditions': html += `<h2>Terms and Conditions</h2><p>${value}</p>`; break;
                 default: html += `<p><strong>${field}:</strong> ${value}</p>`; break;
             }
@@ -53,5 +62,5 @@ function renderContent(data) {
     contentDiv.innerHTML = html;
 }
 
-// Call function
+// Call the function to fetch and render data
 fetchSheetData();
