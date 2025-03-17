@@ -1,10 +1,13 @@
 function fetchSheetData() {
     const SHEET_ID = '19U1S1RD2S0dY_zKgE2CPmTp-5O4VUSfXCCC0qLg0oq0';
-    const SHEET_NAME = encodeURIComponent('Pay As You Go'); // Ensure encoding for spaces
+    const SHEET_NAME = 'Pay As You Go'; // Change this to match the correct worksheet name
     const API_KEY = 'AIzaSyBm8quffA_U1BTUnbBxXeLKuHYyEzLFX7E';
 
-    // Use `sheets/data/rowData` to get both values & formatting
-    const formattingUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A:B?key=${API_KEY}`;
+    // Properly encode the sheet name to avoid issues with spaces
+    const SHEET_NAME_ENCODED = encodeURIComponent(SHEET_NAME);
+
+    // Fetch only columns A and B to ensure we're getting the right format
+    const formattingUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME_ENCODED}!A:B?key=${API_KEY}`;
 
     console.log("Fetching data from:", formattingUrl);
 
@@ -25,6 +28,7 @@ function fetchSheetData() {
             document.getElementById('content').innerHTML = `<p style="color:red;">Error fetching data: ${error}</p>`;
         });
 }
+
 
 function renderContent(data) {
     const contentDiv = document.getElementById('content');
