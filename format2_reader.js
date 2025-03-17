@@ -3,21 +3,20 @@ function fetchSheetData() {
     const SHEET_NAME = 'Pay As You Go';
     const API_KEY = 'AIzaSyBm8quffA_U1BTUnbBxXeLKuHYyEzLFX7E';
 
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
-    const formattingUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values:batchGet?ranges=${SHEET_NAME}&fields=valueRanges(values(effectiveFormat,textFormatRuns))&key=${API_KEY}`;
+    const formattingUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}?fields=sheets.data.rowData.values(effectiveValue,effectiveFormat,textFormatRuns)&key=${API_KEY}`;
 
-    console.log("Fetching data from:", url);
+    console.log("Fetching data from:", formattingUrl);
 
     fetch(formattingUrl)
         .then(response => response.json())
         .then(data => {
             console.log("Raw Data from Google Sheets:", data); // Debugging API response
             
-            if (data && data.valueRanges && data.valueRanges.length > 0) {
-                renderContent(data.valueRanges[0].values);
+            if (data.sheets && data.sheets[0].data) {
+                renderContent(data.sheets[0].data[0].rowData);
             } else {
                 console.error('Error: No formatted values found.');
-                document.getElementById('content').innerHTML = '<p style="color:red;">Error: Unable to load content. See console for details.</p>';
+                document.getElementById('content').innerHTML = '<p style="color:red;">Error: Unable to load formatted content. See console for details.</p>';
             }
         })
         .catch(error => {
@@ -35,7 +34,7 @@ function renderContent(data) {
 
     if (data && data.length > 1) {
         for (let i = 1; i < data.length; i++) {
-            const row = Array.isArray(data[i]) ? data[i] : [];
+            const row = data[i]?.values || [];  // Ensure row exists
             const field = (row.length > 0 && row[0]) ? applyFormatting(row[0]) : currentSection; // Maintain section title
             const value = (row.length > 1 && row[1]) ? applyFormatting(row[1]) : "";  // Format text
 
@@ -61,14 +60,14 @@ function renderContent(data) {
     contentDiv.innerHTML = html;
 }
 
-function applyFormatting(cellData) {
-    if (!cellData || typeof cellData !== 'object') return cellData; // Ensure valid data
+function applyFormatting(cell) {
+    if (!cell || !cell.effectiveValue) return ""; // If no data, return empty string
 
-    let text = cellData.text || cellData; // Get the text
-    let formattedText = ''; // HTML formatted text
+    let text = cell.effectiveValue.stringValue || ""; // Get cell text
+    let formattedText = '';
 
-    if (cellData.textFormatRuns) {
-        cellData.textFormatRuns.forEach(run => {
+    if (cell.textFormatRuns) {
+        cell.textFormatRuns.forEach(run => {
             let part = run.text || "";
             let style = '';
 
@@ -93,7 +92,7 @@ function applyFormatting(cellData) {
             }
         });
     } else {
-        formattedText = text; // Default text
+        formattedText = text; // Default to plain text
     }
 
     return formattedText;
