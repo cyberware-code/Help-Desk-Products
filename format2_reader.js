@@ -1,9 +1,10 @@
 function fetchSheetData() {
     const SHEET_ID = '19U1S1RD2S0dY_zKgE2CPmTp-5O4VUSfXCCC0qLg0oq0';
-    const SHEET_NAME = 'Pay As You Go';
+    const SHEET_NAME = encodeURIComponent('Pay As You Go'); // Ensure encoding for spaces
     const API_KEY = 'AIzaSyBm8quffA_U1BTUnbBxXeLKuHYyEzLFX7E';
 
-    const formattingUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}?fields=sheets.data.rowData.values(effectiveValue,effectiveFormat,textFormatRuns)&key=${API_KEY}`;
+    // Use `sheets/data/rowData` to get both values & formatting
+    const formattingUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A:B?key=${API_KEY}`;
 
     console.log("Fetching data from:", formattingUrl);
 
@@ -12,8 +13,8 @@ function fetchSheetData() {
         .then(data => {
             console.log("Raw Data from Google Sheets:", data); // Debugging API response
             
-            if (data.sheets && data.sheets[0].data) {
-                renderContent(data.sheets[0].data[0].rowData);
+            if (data && data.values) {
+                renderContent(data.values);
             } else {
                 console.error('Error: No formatted values found.');
                 document.getElementById('content').innerHTML = '<p style="color:red;">Error: Unable to load formatted content. See console for details.</p>';
