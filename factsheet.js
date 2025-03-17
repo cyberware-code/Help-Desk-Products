@@ -1,4 +1,10 @@
 async function fetchSheetData(sheetName) {
+    if (!sheetName) {
+        console.error("Error: No sheet name provided.");
+        document.getElementById('factsheet').innerHTML = `<p style="color:red;">Error: No sheet name provided.</p>`;
+        return;
+    }
+
     const SHEET_ID = '19U1S1RD2S0dY_zKgE2CPmTp-5O4VUSfXCCC0qLg0oq0'; 
     const API_KEY = 'AIzaSyBm8quffA_U1BTUnbBxXeLKuHYyEzLFX7E';
 
@@ -13,12 +19,12 @@ async function fetchSheetData(sheetName) {
 
         console.log("Sheet Metadata:", metadata); // Debugging API response
 
-        if (!metadata.sheets) {
+        if (!metadata.sheets || metadata.sheets.length === 0) {
             throw new Error("No sheets found in the Google Sheet.");
         }
 
-        // Find the `gid` for the given `sheetName`
-        const sheet = metadata.sheets.find(s => s.properties.title === sheetName);
+        // Find the correct sheet by name
+        const sheet = metadata.sheets.find(s => s.properties.title.trim().toLowerCase() === sheetName.trim().toLowerCase());
 
         if (!sheet) {
             throw new Error(`Sheet '${sheetName}' not found.`);
@@ -41,14 +47,14 @@ async function fetchSheetData(sheetName) {
         if (json.table && json.table.rows) {
             return renderFactsheet(json.table.rows);
         } else {
-            console.error(`Error: No data found in sheet '${sheetName}'.`);
-            document.getElementById('factsheet').innerHTML = `<p style="color:red;">Error: Unable to load '${sheetName}'.</p>`;
+            throw new Error(`No data found in sheet '${sheetName}'.`);
         }
     } catch (error) {
         console.error('Error fetching data:', error);
-        document.getElementById('factsheet').innerHTML = `<p style="color:red;">Error fetching data: ${error}</p>`;
+        document.getElementById('factsheet').innerHTML = `<p style="color:red;">Error fetching data: ${error.message}</p>`;
     }
 }
+
 
 function renderFactsheet(data) {
     const factsheetDiv = document.getElementById('factsheet');
