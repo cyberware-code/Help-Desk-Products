@@ -42,7 +42,28 @@ function fetchSheetData(sheetName) {
             const formattedData = jsonData.table.rows.map(row => ({
                 c: row.c.map(cell => cell ? { v: cell.v, f: cell.f } : null)
             }));
-
+            fetch(dataUrl)
+            .then(response => response.text())
+            .then(text => {
+                console.log("Raw Response from Google Sheets:", text); // Log raw response
+                const jsonData = JSON.parse(text.substring(47, text.length - 2)); // Strip Google wrapper
+                
+                if (!jsonData.table || !jsonData.table.rows) {
+                    console.error("❌ Google Sheets API returned no data.");
+                    return;
+                }
+        
+                console.log("Parsed Google Sheets Data:", jsonData.table.rows); // Log structured data
+        
+                const formattedData = jsonData.table.rows.map(row => ({
+                    c: row.c.map(cell => cell ? { v: cell.v } : null)
+                }));
+        
+                console.log("Formatted Data Length:", formattedData.length); // Log data length
+                renderFactsheet(formattedData);
+            })
+            .catch(error => console.error("Error fetching data:", error));
+        
             renderFactsheet(formattedData);
         })
         .catch(error => console.error("Error fetching data:", error));
@@ -76,45 +97,61 @@ function renderFactsheet(data) {
 
             if (!field && !value) continue; 
 
+            console.log(`Processing Row ${i}: Field='${field}', Value='${value}'`); // Debug log for every row
+
             switch (field) {
                 case "Image URL":
-                    let cleanedUrl = value.trim(); // Remove extra spaces or newlines
-                    console.log("Cleaned Image URL:", cleanedUrl); // Debugging log
+                    let cleanedUrl = value.trim();
+                    console.log(`✔️ Image URL Found: ${cleanedUrl}`);
                     heroImage = `<img src="${cleanedUrl}" alt="Product Image" class="hero-image">`;
-                    console.log("Generated Image Tag:", heroImage); // Debugging log
+                    console.log("Generated Image Tag:", heroImage);
                     break;
                 case "Product Name":
+                    console.log(`✔️ Product Name Found: ${value}`);
                     productName = `<h1 class="product-title">${value}</h1>`;
                     break;
                 case "Tagline":
+                    console.log(`✔️ Tagline Found: ${value}`);
                     tagline = `<h3 class="product-tagline">${value}</h3>`;
                     break;
                 case "Description":
+                    console.log(`✔️ Description Found: ${value}`);
                     description = `<p class="product-description">${value}</p>`;
                     break;
                 case "Key Features":
+                    console.log(`✔️ Key Feature Added: ${value}`);
                     features += `<li>${value}</li>`;
                     break;
                 case "Ideal For":
+                    console.log(`✔️ Ideal For: ${value}`);
                     idealFor += `<li>${value}</li>`;
                     break;
                 case "Pricing":
+                    console.log(`✔️ Pricing Found: ${value}`);
                     pricing = `<p class="product-pricing">${value}</p>`;
                     break;
                 case "What is Excluded":
+                    console.log(`✔️ Exclusion Found: ${value}`);
                     exclusions += `<li>${value}</li>`;
                     break;
                 case "Pros":
+                    console.log(`✔️ Pros Added: ${value}`);
                     pros += `<li>${value}</li>`;
                     break;
                 case "Cons":
+                    console.log(`✔️ Cons Added: ${value}`);
                     cons += `<li>${value}</li>`;
                     break;
                 case "Frequently Asked Questions":
+                    console.log(`✔️ FAQ Added: ${value}`);
                     faq += `<li>${value}</li>`;
                     break;
                 case "Terms and Conditions":
+                    console.log(`✔️ Terms & Conditions Found: ${value}`);
                     terms = `<p class="product-terms">${value}</p>`;
+                    break;
+                default:
+                    console.warn(`⚠️ Unrecognized Field: '${field}' with Value: '${value}'`);
                     break;
             }
         }
@@ -188,9 +225,11 @@ function renderFactsheet(data) {
 
         factsheetDiv.innerHTML = html;
     } else {
+        console.error("❌ No valid data found in the Google Sheet.");
         factsheetDiv.innerHTML = '<p>No data found in the Google Sheet.</p>';
     }
 }
+
 
 // Call with correct sheet name
 fetchSheetData("Pay As You Go");
