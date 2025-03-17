@@ -72,6 +72,9 @@ function fetchSheetData(sheetName) {
 // **Step 3: Render the Fetched Data into a Fact Sheet**
 function renderFactsheet(data) {
     console.log("Processing Data for Rendering:", data); // Debugging log
+    console.log("📌 Debugging `renderFactsheet(data)` Call:");
+    console.log("➡️ Data received:", data);
+    console.log(`➡️ Data Length: ${data.length}`);
 
     const factsheetDiv = document.getElementById('factsheet');
     let heroImage = ''; 
@@ -232,4 +235,4 @@ function renderFactsheet(data) {
 
 
 // Call with correct sheet name
-fetchSheetData("Pay As You Go");
+//fetchSheetData("Pay As You Go");
