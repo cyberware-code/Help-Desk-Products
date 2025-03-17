@@ -63,36 +63,109 @@ function renderFactsheet(data) {
     const factsheetDiv = document.getElementById('factsheet');
     let html = '';
     let currentSection = ''; // Store last valid section title
+    let heroImage = ''; // Placeholder for hero image
+    let productName = ''; // Placeholder for the main title
+    let tagline = ''; // Placeholder for the tagline
+    let description = ''; // Placeholder for the description
+    let features = ''; // Placeholder for key features
+    let pricing = ''; // Placeholder for pricing
+    let faq = ''; // Placeholder for FAQs
+    let pros = ''; // Pros section
+    let cons = ''; // Cons section
+    let terms = ''; // Terms and Conditions section
 
     if (data && data.length > 0) {
         for (let i = 0; i < data.length; i++) {
             const row = data[i].c || []; // Ensure row exists
             console.log(`Row ${i}:`, row); // Debugging each row
 
-            // Extract values safely, handling cases where a value may be null
+            // Extract values safely
             const field = row[0] && row[0].v ? row[0].v.trim() : "";  // Column A
             const value = row[1] && row[1].v ? row[1].v.trim() : "";  // Column B
 
-            // If both columns are empty, skip row
-            if (!field && !value) continue;
+            if (!field && !value) continue; // Skip completely empty rows
 
-            // **If Column A has a value, it's a new section header**
-            if (field) {
-                if (currentSection !== "") {
-                    html += '</ul>'; // Close the previous bullet list
-                }
-                html += `<h2>${field}</h2><ul>`; // Start new section
-                currentSection = field;
-            }
-
-            // **If Column A is empty but Column B has a value, it's a bullet point**
-            if (!field && value) {
-                html += `<li>${value}</li>`;
+            // **Handle Special Fields for Layout**
+            switch (field) {
+                case "Image URL":
+                    heroImage = `<img src="${value}" alt="Product Image" class="hero-image">`;
+                    break;
+                case "Product Name":
+                    productName = `<h1 class="product-title">${value}</h1>`;
+                    break;
+                case "Tagline":
+                    tagline = `<h3 class="product-tagline">${value}</h3>`;
+                    break;
+                case "Description":
+                    description = `<p class="product-description">${value}</p>`;
+                    break;
+                case "Key Features":
+                    features += `<li>${value}</li>`;
+                    break;
+                case "Pricing":
+                    pricing = `<p class="product-pricing">${value}</p>`;
+                    break;
+                case "Frequently Asked Questions":
+                    faq += `<li>${value}</li>`;
+                    break;
+                case "Pros":
+                    pros += `<li>${value}</li>`;
+                    break;
+                case "Cons":
+                    cons += `<li>${value}</li>`;
+                    break;
+                case "Terms and Conditions":
+                    terms = `<p class="product-terms">${value}</p>`;
+                    break;
+                default:
+                    // Handle general content like "Ideal For", "What is Excluded"
+                    if (field) {
+                        html += `<h2>${field}</h2><ul>`;
+                    }
+                    if (value) {
+                        html += `<li>${value}</li>`;
+                    }
+                    html += `</ul>`;
+                    break;
             }
         }
-        html += '</ul>'; // Close last bullet list
+
+        // **Final HTML Assembly**
+        html = `
+            <div class="factsheet">
+                <div class="hero-section">
+                    ${heroImage}
+                    <div class="title-container">
+                        ${productName}
+                        ${tagline}
+                    </div>
+                </div>
+                <div class="description-section">${description}</div>
+                <div class="features-section">
+                    <h2>Key Features</h2>
+                    <ul>${features}</ul>
+                </div>
+                <div class="pricing-section">
+                    <h2>Pricing</h2>
+                    ${pricing}
+                </div>
+                <div class="pros-cons-section">
+                    <h2>Pros & Cons</h2>
+                    <h3>Pros</h3><ul>${pros}</ul>
+                    <h3>Cons</h3><ul>${cons}</ul>
+                </div>
+                <div class="faq-section">
+                    <h2>Frequently Asked Questions</h2>
+                    <ul>${faq}</ul>
+                </div>
+                <div class="terms-section">
+                    <h2>Terms and Conditions</h2>
+                    ${terms}
+                </div>
+            </div>
+        `;
     } else {
-        html += '<p>No data found in the Google Sheet.</p>';
+        html = '<p>No data found in the Google Sheet.</p>';
     }
 
     console.log("Final Rendered HTML:", html); // Log final HTML output

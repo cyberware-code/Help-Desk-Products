@@ -1,31 +1,71 @@
+/* General Layout */
+.factsheet {
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Hero Section */
+.hero-section {
+    position: relative;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
 .hero-image {
     width: 100%;
-    height: auto;
+    max-height: 300px;
     object-fit: cover;
-    max-height: 400px;
+    border-radius: 10px 10px 0 0;
 }
 
-.header {
+.title-container {
+    padding: 10px;
     text-align: center;
-    padding: 20px;
 }
 
-h1, h2 {
+/* Product Name and Tagline */
+.product-title {
+    font-size: 26px;
+    font-weight: bold;
     color: #333;
 }
 
-.description, .features, .ideal-for, .pricing, .exclusions, .pros-cons, .faq, .footer {
-    padding: 20px;
-    background: #f9f9f9;
-    margin: 10px 0;
+.product-tagline {
+    font-size: 18px;
+    font-style: italic;
+    color: #555;
+}
+
+/* Sections */
+h2 {
+    font-size: 20px;
+    color: #222;
+    margin-top: 20px;
+}
+
+p, ul {
+    font-size: 16px;
+    color: #444;
 }
 
 ul {
     padding-left: 20px;
 }
 
-.footer {
-    text-align: center;
+/* Pros & Cons */
+.pros-cons-section h3 {
+    font-size: 18px;
+    color: #333;
+}
+
+/* Terms */
+.terms-section {
     font-size: 14px;
-    color: #666;
+    color: #777;
 }
