@@ -1,17 +1,17 @@
 async function fetchSheetData(sheetName) {
-    if (!sheetName) {
-        console.error("Error: No sheet name provided.");
-        document.getElementById('factsheet').innerHTML = `<p style="color:red;">Error: No sheet name provided.</p>`;
+    if (!sheetName || typeof sheetName !== 'string' || sheetName.trim() === "") {
+        console.error("Error: No valid sheet name provided.");
+        document.getElementById('factsheet').innerHTML = `<p style="color:red;">Error: No valid sheet name provided.</p>`;
         return;
     }
 
     const SHEET_ID = '19U1S1RD2S0dY_zKgE2CPmTp-5O4VUSfXCCC0qLg0oq0'; 
     const API_KEY = 'AIzaSyBm8quffA_U1BTUnbBxXeLKuHYyEzLFX7E';
 
-    // Fetch the list of available sheets
+    // Fetch metadata to find correct `gid`
     const metadataUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}?fields=sheets.properties&key=${API_KEY}`;
 
-    console.log(`Fetching sheet list from: ${metadataUrl}`);
+    console.log(`Fetching metadata for sheet: '${sheetName}' from: ${metadataUrl}`);
 
     try {
         const metadataResponse = await fetch(metadataUrl);
@@ -23,7 +23,7 @@ async function fetchSheetData(sheetName) {
             throw new Error("No sheets found in the Google Sheet.");
         }
 
-        // Find the correct sheet by name
+        // Find sheet by name (case-insensitive)
         const sheet = metadata.sheets.find(s => s.properties.title.trim().toLowerCase() === sheetName.trim().toLowerCase());
 
         if (!sheet) {
@@ -33,7 +33,7 @@ async function fetchSheetData(sheetName) {
         const sheetId = sheet.properties.sheetId;
         console.log(`Found Sheet '${sheetName}' with GID: ${sheetId}`);
 
-        // Fetch data using the correct `gid`
+        // Fetch data from the correct `gid`
         const dataUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&tq=&gid=${sheetId}`;
 
         console.log(`Fetching data from: ${dataUrl}`);
@@ -54,6 +54,7 @@ async function fetchSheetData(sheetName) {
         document.getElementById('factsheet').innerHTML = `<p style="color:red;">Error fetching data: ${error.message}</p>`;
     }
 }
+
 
 
 function renderFactsheet(data) {
