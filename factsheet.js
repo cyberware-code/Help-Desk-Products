@@ -89,6 +89,7 @@ function renderFactsheet(data) {
             // **Handle Special Fields for Layout**
             switch (field) {
                 case "Image URL":
+                    console.log(heroImage)
                     heroImage = `<img src="${value}" alt="Product Image" class="hero-image">`;
                     break;
                 case "Product Name":
