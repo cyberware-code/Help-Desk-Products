@@ -17,7 +17,7 @@ function renderContent(data) {
     let html = '';
 
     // Check if there's data and skip header row
-    if (data.length > 1) {
+    if (data && data.length > 1) {
         for (let i = 1; i < data.length; i++) {
             const row = data[i];
             const field = row[0]; // Column A: Field Name
