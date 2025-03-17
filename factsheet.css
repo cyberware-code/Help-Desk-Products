@@ -1,0 +1,31 @@
+.hero-image {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    max-height: 400px;
+}
+
+.header {
+    text-align: center;
+    padding: 20px;
+}
+
+h1, h2 {
+    color: #333;
+}
+
+.description, .features, .ideal-for, .pricing, .exclusions, .pros-cons, .faq, .footer {
+    padding: 20px;
+    background: #f9f9f9;
+    margin: 10px 0;
+}
+
+ul {
+    padding-left: 20px;
+}
+
+.footer {
+    text-align: center;
+    font-size: 14px;
+    color: #666;
+}

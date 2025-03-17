@@ -1,12 +1,25 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Help Desk-Product</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Factsheet</title>
+    <link rel="stylesheet" href="factsheet.css">
 </head>
 <body>
-    <div id="content">
-        <!-- Content will be loaded here by JavaScript -->
+
+    <!-- Factsheet Container -->
+    <div id="factsheet" class="factsheet-container">
+        <p>Loading product details...</p>
     </div>
-    <script src="format2_reader.js"></script>
+
+    <!-- Include the JavaScript File -->
+    <script src="factsheet.js"></script>
+
+    <!-- Load the Factsheet -->
+    <script>
+        fetchSheetData("Pay As You Go"); // Change this to dynamically load another sheet
+    </script>
+
 </body>
 </html>
