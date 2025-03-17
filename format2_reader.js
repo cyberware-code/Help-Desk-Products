@@ -4,18 +4,19 @@ function fetchSheetData() {
     const API_KEY = 'AIzaSyBm8quffA_U1BTUnbBxXeLKuHYyEzLFX7E';
 
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
+    const formattingUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values:batchGet?ranges=${SHEET_NAME}&fields=valueRanges(values(effectiveFormat,textFormatRuns))&key=${API_KEY}`;
 
     console.log("Fetching data from:", url);
 
-    fetch(url)
+    fetch(formattingUrl)
         .then(response => response.json())
         .then(data => {
             console.log("Raw Data from Google Sheets:", data); // Debugging API response
             
-            if (data && data.values) {
-                renderContent(data.values);
+            if (data && data.valueRanges && data.valueRanges.length > 0) {
+                renderContent(data.valueRanges[0].values);
             } else {
-                console.error('Error: data.values is undefined.');
+                console.error('Error: No formatted values found.');
                 document.getElementById('content').innerHTML = '<p style="color:red;">Error: Unable to load content. See console for details.</p>';
             }
         })
@@ -35,8 +36,8 @@ function renderContent(data) {
     if (data && data.length > 1) {
         for (let i = 1; i < data.length; i++) {
             const row = Array.isArray(data[i]) ? data[i] : [];
-            const field = (row.length > 0 && row[0]) ? row[0] : currentSection; // Maintain the last section title
-            const value = (row.length > 1 && row[1]) ? row[1] : "";  // Allow empty values
+            const field = (row.length > 0 && row[0]) ? applyFormatting(row[0]) : currentSection; // Maintain section title
+            const value = (row.length > 1 && row[1]) ? applyFormatting(row[1]) : "";  // Format text
 
             // If a new section title appears, start a new list
             if (field !== currentSection) {
@@ -60,5 +61,43 @@ function renderContent(data) {
     contentDiv.innerHTML = html;
 }
 
-// Call the function to fetch and render data
+function applyFormatting(cellData) {
+    if (!cellData || typeof cellData !== 'object') return cellData; // Ensure valid data
+
+    let text = cellData.text || cellData; // Get the text
+    let formattedText = ''; // HTML formatted text
+
+    if (cellData.textFormatRuns) {
+        cellData.textFormatRuns.forEach(run => {
+            let part = run.text || "";
+            let style = '';
+
+            if (run.format) {
+                const format = run.format;
+
+                // Apply bold, italic, underline
+                if (format.bold) style += 'font-weight:bold;';
+                if (format.italic) style += 'font-style:italic;';
+                if (format.underline) style += 'text-decoration:underline;';
+
+                // Apply font size
+                if (format.fontSize) style += `font-size:${format.fontSize}px;`;
+
+                // Apply font family
+                if (format.fontFamily) style += `font-family:${format.fontFamily};`;
+
+                // Convert to styled span
+                formattedText += `<span style="${style}">${part}</span>`;
+            } else {
+                formattedText += part;
+            }
+        });
+    } else {
+        formattedText = text; // Default text
+    }
+
+    return formattedText;
+}
+
+// Call function to fetch and render formatted data
 fetchSheetData();
