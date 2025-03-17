@@ -1,6 +1,6 @@
 function fetchSheetData() {
     const SHEET_ID = '19U1S1RD2S0dY_zKgE2CPmTp-5O4VUSfXCCC0qLg0oq0';
-    const SHEET_TAB_ID = 1238020069; // Correct `gid` for the right sheet
+    const SHEET_TAB_ID = 1238020069; // Correct GID for the right sheet
     const API_KEY = 'AIzaSyBm8quffA_U1BTUnbBxXeLKuHYyEzLFX7E';
 
     // Fetch by `gid` (Google Sheets tab ID)
@@ -30,18 +30,18 @@ function fetchSheetData() {
 function renderContent(data) {
     const contentDiv = document.getElementById('content');
     let html = '';
-    let currentSection = ''; // Track current section for grouping bullets
+    let currentSection = ''; // Track the last valid section title
 
     console.log("Processed Data for Rendering:", data); // Debugging log
 
     if (data && data.length > 1) {
         for (let i = 1; i < data.length; i++) {
-            const row = data[i] || []; // Ensure row exists
-            const field = row[0] ? applyFormatting(row[0].trim()) : currentSection; // Use last section title if empty
-            const value = row[1] ? applyFormatting(row[1].trim()) : ""; // Ensure no empty values
+            const row = data[i].c || []; // Ensure row exists
+            const field = row[0] && row[0].v ? applyFormatting(row[0].v.trim()) : currentSection; // Use last section title if empty
+            const value = row[1] && row[1].v ? applyFormatting(row[1].v.trim()) : ""; // Ensure no empty values
 
             // **Handle Section Titles**
-            if (row[0] && row[0].trim() !== "") {
+            if (row[0] && row[0].v) {
                 // Close previous list if we started a new section
                 if (currentSection !== "") {
                     html += '</ul>';
@@ -68,20 +68,17 @@ function applyFormatting(text) {
 
     let formattedText = text;
 
-    // Apply bold
-    if (text.includes("**")) {
-        formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    }
+    // Apply bold (**text**)
+    formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
 
-    // Apply italic
-    if (text.includes("_")) {
-        formattedText = formattedText.replace(/_(.*?)_/g, '<em>$1</em>');
-    }
+    // Apply italic (_text_)
+    formattedText = formattedText.replace(/_(.*?)_/g, '<em>$1</em>');
 
-    // Apply underline
-    if (text.includes("__")) {
-        formattedText = formattedText.replace(/__(.*?)__/g, '<u>$1</u>');
-    }
+    // Apply underline (__text__)
+    formattedText = formattedText.replace(/__(.*?)__/g, '<u>$1</u>');
+
+    // Apply font size notation (e.g., [size=16]text[/size])
+    formattedText = formattedText.replace(/\[size=(\d+)\](.*?)\[\/size\]/g, '<span style="font-size:$1px;">$2</span>');
 
     return formattedText;
 }
