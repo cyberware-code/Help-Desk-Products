@@ -1,9 +1,9 @@
 function fetchSheetData() {
     const SHEET_ID = '19U1S1RD2S0dY_zKgE2CPmTp-5O4VUSfXCCC0qLg0oq0';
-    const SHEET_TAB_ID = 1238020069; // Correct GID for the right sheet
+    const SHEET_TAB_ID = 1238020069; // Correct Sheet GID
     const API_KEY = 'AIzaSyBm8quffA_U1BTUnbBxXeLKuHYyEzLFX7E';
 
-    // Fetch by `gid` (Google Sheets tab ID)
+    // Fetch by `gid`
     const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&tq=&gid=${SHEET_TAB_ID}`;
 
     console.log("Fetching data from:", url);
@@ -11,7 +11,8 @@ function fetchSheetData() {
     fetch(url)
         .then(response => response.text()) // Google Sheets API returns JSONP
         .then(text => {
-            const json = JSON.parse(text.substring(47, text.length - 2)); // Strip JSONP wrapper
+            // Extract valid JSON from Google's JSONP response
+            const json = JSON.parse(text.substring(47, text.length - 2));
             console.log("Raw Data from Google Sheets:", json); // Debugging API response
 
             if (json.table && json.table.rows) {
@@ -34,8 +35,8 @@ function renderContent(data) {
 
     console.log("Processed Data for Rendering:", data); // Debugging log
 
-    if (data && data.length > 1) {
-        for (let i = 1; i < data.length; i++) {
+    if (data && data.length > 0) {
+        for (let i = 0; i < data.length; i++) {
             const row = data[i].c || []; // Ensure row exists
             const field = row[0] && row[0].v ? applyFormatting(row[0].v.trim()) : currentSection; // Use last section title if empty
             const value = row[1] && row[1].v ? applyFormatting(row[1].v.trim()) : ""; // Ensure no empty values
