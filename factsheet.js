@@ -78,7 +78,10 @@ function renderFactsheet(data) {
 
             switch (field) {
                 case "Image URL":
-                    heroImage = `<img src="${value}" alt="Product Image" class="hero-image">`;
+                    let cleanedUrl = value.trim(); // Remove extra spaces or newlines
+                    console.log("Cleaned Image URL:", cleanedUrl); // Debugging log
+                    heroImage = `<img src="${cleanedUrl}" alt="Product Image" class="hero-image">`;
+                    console.log("Generated Image Tag:", heroImage); // Debugging log
                     break;
                 case "Product Name":
                     productName = `<h1 class="product-title">${value}</h1>`;
