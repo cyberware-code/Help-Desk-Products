@@ -28,33 +28,31 @@ function fetchSheetData() {
 function renderContent(data) {
     const contentDiv = document.getElementById('content');
     let html = '';
+    let currentSection = ''; // Track current section for grouping bullets
 
-    // Debug: Print raw data
-    console.log("Processed Data for Rendering:", data);
+    console.log("Processed Data for Rendering:", data); // Debugging log
 
     if (data && data.length > 1) {
         for (let i = 1; i < data.length; i++) {
-            const row = data[i] || [];  // Ensure row is defined
-            const field = row[0] || "Unknown Field";  // Handle missing field
-            const value = row[1] || "No value provided";  // Handle missing value
+            const row = Array.isArray(data[i]) ? data[i] : [];
+            const field = (row.length > 0 && row[0]) ? row[0] : currentSection; // Maintain the last section title
+            const value = (row.length > 1 && row[1]) ? row[1] : "";  // Allow empty values
 
-            switch (field) {
-                case 'Product Name': html += `<h1>${value}</h1>`; break;
-                case 'Description': html += `<p>${value}</p>`; break;
-                case 'Ideal For': html += `<h2>Ideal For</h2><p>${value}</p>`; break;
-                case 'What it Covers': html += `<h2>What it Covers</h2><p>${value}</p>`; break;
-                case 'What is Excluded': html += `<h2>What is Excluded</h2><p>${value}</p>`; break;
-                case 'How It Is Delivered': html += `<h2>How It Is Delivered</h2><p>${value}</p>`; break;
-                case 'Unit Cost': html += `<h2>Unit Cost</h2><p>${value}</p>`; break;
-                case 'Unit Price': html += `<h2>Unit Price</h2><p>${value}</p>`; break;
-                case 'Pros': html += `<h2>Pros</h2><p>${value}</p>`; break;
-                case 'Cons': html += `<h2>Cons</h2><p>${value}</p>`; break;
-                case 'Frequently Asked Questions': html += `<h2>Frequently Asked Questions</h2><p>${value}</p>`; break;
-                case 'Image URL': html += `<h2>Image</h2><img src="${value}" alt="Product Image" style="max-width:100%; height:auto;">`; break;
-                case 'Terms and Conditions': html += `<h2>Terms and Conditions</h2><p>${value}</p>`; break;
-                default: html += `<p><strong>${field}:</strong> ${value}</p>`; break;
+            // If a new section title appears, start a new list
+            if (field !== currentSection) {
+                if (currentSection !== '') {
+                    html += '</ul>'; // Close the previous section's list
+                }
+                html += `<h2>${field}</h2><ul>`; // Start a new section
+                currentSection = field; // Update current section tracker
+            }
+
+            // Add the value as a bullet point if it's not empty
+            if (value.trim() !== '') {
+                html += `<li>${value}</li>`;
             }
         }
+        html += '</ul>'; // Close the last section's list
     } else {
         html += '<p>No data found in the Google Sheet.</p>';
     }
