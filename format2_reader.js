@@ -1,26 +1,24 @@
 function fetchSheetData() {
     const SHEET_ID = '19U1S1RD2S0dY_zKgE2CPmTp-5O4VUSfXCCC0qLg0oq0';
-    const SHEET_NAME = 'Pay As You Go'; // Ensure this matches the correct worksheet name
+    const SHEET_TAB_ID = 1238020069; // Correct `gid` for the right sheet
     const API_KEY = 'AIzaSyBm8quffA_U1BTUnbBxXeLKuHYyEzLFX7E';
 
-    // Properly encode the sheet name for the URL
-    const SHEET_NAME_ENCODED = encodeURIComponent(SHEET_NAME);
-
-    // Fetch only columns A and B to keep structure correct
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME_ENCODED}!A:B?key=${API_KEY}`;
+    // Fetch by `gid` (Google Sheets tab ID)
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&tq=&gid=${SHEET_TAB_ID}`;
 
     console.log("Fetching data from:", url);
 
     fetch(url)
-        .then(response => response.json())
-        .then(data => {
-            console.log("Raw Data from Google Sheets:", data); // Debugging API response
-            
-            if (data && data.values) {
-                renderContent(data.values);
+        .then(response => response.text()) // Google Sheets API returns JSONP
+        .then(text => {
+            const json = JSON.parse(text.substring(47, text.length - 2)); // Strip JSONP wrapper
+            console.log("Raw Data from Google Sheets:", json); // Debugging API response
+
+            if (json.table && json.table.rows) {
+                renderContent(json.table.rows);
             } else {
-                console.error('Error: No formatted values found.');
-                document.getElementById('content').innerHTML = '<p style="color:red;">Error: Unable to load formatted content. See console for details.</p>';
+                console.error('Error: No data found in the specified sheet.');
+                document.getElementById('content').innerHTML = '<p style="color:red;">Error: Unable to load content. Check the sheet ID.</p>';
             }
         })
         .catch(error => {
