@@ -1,42 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Business Support Packages</title>
+    <title>Help Desk Product</title>
 </head>
 <body>
-    <div id="content"></div>
-
-    <script>
-        // Function to get URL parameters
-        function getUrlParameter(name) {
-            name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
-            var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
-            var results = regex.exec(location.search);
-            return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
-        };
-
-        // Determine which format to use based on the URL parameter
-        const format = getUrlParameter('format') || '1'; // Default to format 1
-
-        let scriptSrc;
-        if (format === '1') {
-            scriptSrc = 'format1_reader.js';
-        } else if (format === '2') {
-            scriptSrc = 'format2_reader.js';
-        } else {
-            console.error('Invalid format specified.  Defaulting to format 1.');
-            scriptSrc = 'format1_reader.js';
-        }
-
-        // Load the appropriate JavaScript file dynamically
-        const script = document.createElement('script');
-        script.src = scriptSrc;
-        script.onload = function() {
-          console.log('Script loaded');
-        }
-        document.body.appendChild(script);
-    </script>
+    <div id="content">
+        <!-- Content will be loaded here by JavaScript -->
+    </div>
+    <script src="format2_reader.js"></script>
 </body>
 </html>
