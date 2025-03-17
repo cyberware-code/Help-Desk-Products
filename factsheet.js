@@ -1,95 +1,83 @@
-async function fetchSheetData(sheetName) {
-    if (!sheetName || typeof sheetName !== 'string' || sheetName.trim() === "") {
+function fetchSheetData(sheetName) {
+    if (!sheetName) {
         console.error("Error: No valid sheet name provided.");
-        document.getElementById('factsheet').innerHTML = `<p style="color:red;">Error: No valid sheet name provided.</p>`;
         return;
     }
 
-    const SHEET_ID = '19U1S1RD2S0dY_zKgE2CPmTp-5O4VUSfXCCC0qLg0oq0'; 
-    const API_KEY = 'AIzaSyBm8quffA_U1BTUnbBxXeLKuHYyEzLFX7E';
+    console.log("Fetching data for sheet:", sheetName); // Debugging log
 
-    // Fetch metadata to find correct `gid`
-    const metadataUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}?fields=sheets.properties&key=${API_KEY}`;
+    const SHEET_ID = '19U1S1RD2S0dY_zKgE2CPmTp-5O4VUSfXCCC0qLg0oq0'; // Google Spreadsheet ID
+    const API_KEY = 'AIzaSyBm8quffA_U1BTUnbBxXeLKuHYyEzLFX7E'; // API Key
 
-    console.log(`Fetching metadata for sheet: '${sheetName}' from: ${metadataUrl}`);
+    // **Step 1: Get the Correct GID for the Sheet Name**
+    const metadataUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}?key=${API_KEY}`;
 
-    try {
-        const metadataResponse = await fetch(metadataUrl);
-        const metadata = await metadataResponse.json();
+    fetch(metadataUrl)
+        .then(response => response.json())
+        .then(metadata => {
+            if (!metadata.sheets) throw new Error("Error: Could not retrieve sheet metadata.");
 
-        console.log("Sheet Metadata:", metadata); // Debugging API response
+            console.log("Retrieved Sheet Metadata:", metadata.sheets); // Debugging log
 
-        if (!metadata.sheets || metadata.sheets.length === 0) {
-            throw new Error("No sheets found in the Google Sheet.");
-        }
+            // Find the correct Sheet ID (GID)
+            const sheet = metadata.sheets.find(s => s.properties.title === sheetName);
+            if (!sheet) throw new Error(`Error: Sheet '${sheetName}' not found.`);
 
-        // Find sheet by name (case-insensitive)
-        const sheet = metadata.sheets.find(s => s.properties.title.trim().toLowerCase() === sheetName.trim().toLowerCase());
+            const sheetGID = sheet.properties.sheetId;
+            console.log(`Sheet '${sheetName}' found with GID: ${sheetGID}`);
 
-        if (!sheet) {
-            throw new Error(`Sheet '${sheetName}' not found.`);
-        }
+            // **Step 2: Fetch Data from the Correct Sheet GID**
+            const dataUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&tq=&gid=${sheetGID}`;
 
-        const sheetId = sheet.properties.sheetId;
-        console.log(`Found Sheet '${sheetName}' with GID: ${sheetId}`);
+            return fetch(dataUrl);
+        })
+        .then(response => response.text())
+        .then(text => {
+            const jsonData = JSON.parse(text.substring(47, text.length - 2));
+            if (!jsonData.table.rows) throw new Error("Error: No data returned from Google Sheets.");
 
-        // Fetch data from the correct `gid`
-        const dataUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&tq=&gid=${sheetId}`;
+            console.log("Retrieved Data:", jsonData.table.rows); // Debugging log
 
-        console.log(`Fetching data from: ${dataUrl}`);
+            // Convert Google Sheets formatted data
+            const formattedData = jsonData.table.rows.map(row => ({
+                c: row.c.map(cell => cell ? { v: cell.v, f: cell.f } : null)
+            }));
 
-        const response = await fetch(dataUrl);
-        const text = await response.text();
-        const json = JSON.parse(text.substring(47, text.length - 2)); // Remove JSONP wrapper
-
-        console.log("Raw Data from Google Sheets:", json);
-
-        if (json.table && json.table.rows) {
-            return renderFactsheet(json.table.rows);
-        } else {
-            throw new Error(`No data found in sheet '${sheetName}'.`);
-        }
-    } catch (error) {
-        console.error('Error fetching data:', error);
-        document.getElementById('factsheet').innerHTML = `<p style="color:red;">Error fetching data: ${error.message}</p>`;
-    }
+            renderFactsheet(formattedData);
+        })
+        .catch(error => console.error("Error fetching data:", error));
 }
 
-
-
+// **Step 3: Render the Fetched Data into a Fact Sheet**
 function renderFactsheet(data) {
-    console.log("Processed Data for Rendering:", data); // Debugging log
+    console.log("Processing Data for Rendering:", data); // Debugging log
 
     const factsheetDiv = document.getElementById('factsheet');
-    let heroImage = ''; // Placeholder for hero image
-    let productName = ''; // Placeholder for the main title
-    let tagline = ''; // Placeholder for the tagline
-    let description = ''; // Placeholder for the description
-    let features = ''; // Placeholder for Key Features / Benefits
-    let idealFor = ''; // Placeholder for Ideal For
-    let pricing = ''; // Placeholder for Pricing & Plans
-    let exclusions = ''; // What is Excluded
-    let pros = ''; // Pros section
-    let cons = ''; // Cons section
-    let faq = ''; // Frequently Asked Questions
-    let terms = ''; // Terms and Conditions
+    let heroImage = ''; 
+    let productName = ''; 
+    let tagline = ''; 
+    let description = ''; 
+    let features = ''; 
+    let idealFor = ''; 
+    let pricing = ''; 
+    let exclusions = ''; 
+    let pros = ''; 
+    let cons = ''; 
+    let faq = ''; 
+    let terms = ''; 
 
     if (data && data.length > 0) {
-        let currentSection = ''; // Track last valid section title
+        let currentSection = ''; 
 
         for (let i = 0; i < data.length; i++) {
-            const row = data[i].c || []; // Ensure row exists
-            console.log(`Row ${i}:`, row); // Debugging each row
+            const row = data[i].c || []; 
+            const field = row[0] && row[0].v ? row[0].v.trim() : "";  
+            const value = row[1] && row[1].v ? row[1].v.trim() : "";  
 
-            const field = row[0] && row[0].v ? row[0].v.trim() : "";  // Column A
-            const value = row[1] && row[1].v ? row[1].v.trim() : "";  // Column B
+            if (!field && !value) continue; 
 
-            if (!field && !value) continue; // Skip completely empty rows
-
-            // **Handle Special Fields for Layout**
             switch (field) {
                 case "Image URL":
-                    console.log(heroImage)
                     heroImage = `<img src="${value}" alt="Product Image" class="hero-image">`;
                     break;
                 case "Product Name":
@@ -128,7 +116,6 @@ function renderFactsheet(data) {
             }
         }
 
-        // **Final HTML Assembly Using Table Layout**
         let html = `
             <div class="factsheet">
                 <div class="hero-section">
@@ -148,7 +135,7 @@ function renderFactsheet(data) {
                     </tr>
 
                     <tr>
-                        <td class="section-title">✅ Key Features / Benefits</td>
+                        <td class="section-title">✅ Key Features</td>
                         <td class="section-title">📌 Ideal For</td>
                     </tr>
                     <tr>
@@ -157,7 +144,7 @@ function renderFactsheet(data) {
                     </tr>
 
                     <tr>
-                        <td colspan="2" class="section-title">💲 Pricing & Plans</td>
+                        <td colspan="2" class="section-title">💲 Pricing</td>
                     </tr>
                     <tr>
                         <td colspan="2">${pricing}</td>
@@ -180,7 +167,7 @@ function renderFactsheet(data) {
                     </tr>
 
                     <tr>
-                        <td colspan="2" class="section-title">❓ Frequently Asked Questions</td>
+                        <td colspan="2" class="section-title">❓ FAQs</td>
                     </tr>
                     <tr>
                         <td colspan="2"><ul>${faq}</ul></td>
@@ -202,19 +189,5 @@ function renderFactsheet(data) {
     }
 }
 
-
-function applyFormatting(text) {
-    if (!text) return ""; 
-
-    let formattedText = text;
-
-    formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    formattedText = formattedText.replace(/_(.*?)_/g, '<em>$1</em>');
-    formattedText = formattedText.replace(/__(.*?)__/g, '<u>$1</u>');
-    formattedText = formattedText.replace(/\[size=(\d+)\](.*?)\[\/size\]/g, '<span style="font-size:$1px;">$2</span>');
-    formattedText = formattedText.replace(/\[font=([\w\s]+)\](.*?)\[\/font\]/g, '<span style="font-family:$1;">$2</span>');
-
-    return formattedText;
-}
-
-fetchSheetData();
+// Call with correct sheet name
+fetchSheetData("Pay As You Go");
