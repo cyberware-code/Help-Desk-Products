@@ -61,25 +61,26 @@ function renderFactsheet(data) {
     console.log("Processed Data for Rendering:", data); // Debugging log
 
     const factsheetDiv = document.getElementById('factsheet');
-    let html = '';
-    let currentSection = ''; // Store last valid section title
     let heroImage = ''; // Placeholder for hero image
     let productName = ''; // Placeholder for the main title
     let tagline = ''; // Placeholder for the tagline
     let description = ''; // Placeholder for the description
-    let features = ''; // Placeholder for key features
-    let pricing = ''; // Placeholder for pricing
-    let faq = ''; // Placeholder for FAQs
+    let features = ''; // Placeholder for Key Features / Benefits
+    let idealFor = ''; // Placeholder for Ideal For
+    let pricing = ''; // Placeholder for Pricing & Plans
+    let exclusions = ''; // What is Excluded
     let pros = ''; // Pros section
     let cons = ''; // Cons section
-    let terms = ''; // Terms and Conditions section
+    let faq = ''; // Frequently Asked Questions
+    let terms = ''; // Terms and Conditions
 
     if (data && data.length > 0) {
+        let currentSection = ''; // Track last valid section title
+
         for (let i = 0; i < data.length; i++) {
             const row = data[i].c || []; // Ensure row exists
             console.log(`Row ${i}:`, row); // Debugging each row
 
-            // Extract values safely
             const field = row[0] && row[0].v ? row[0].v.trim() : "";  // Column A
             const value = row[1] && row[1].v ? row[1].v.trim() : "";  // Column B
 
@@ -102,11 +103,14 @@ function renderFactsheet(data) {
                 case "Key Features":
                     features += `<li>${value}</li>`;
                     break;
+                case "Ideal For":
+                    idealFor += `<li>${value}</li>`;
+                    break;
                 case "Pricing":
                     pricing = `<p class="product-pricing">${value}</p>`;
                     break;
-                case "Frequently Asked Questions":
-                    faq += `<li>${value}</li>`;
+                case "What is Excluded":
+                    exclusions += `<li>${value}</li>`;
                     break;
                 case "Pros":
                     pros += `<li>${value}</li>`;
@@ -114,24 +118,17 @@ function renderFactsheet(data) {
                 case "Cons":
                     cons += `<li>${value}</li>`;
                     break;
+                case "Frequently Asked Questions":
+                    faq += `<li>${value}</li>`;
+                    break;
                 case "Terms and Conditions":
                     terms = `<p class="product-terms">${value}</p>`;
-                    break;
-                default:
-                    // Handle general content like "Ideal For", "What is Excluded"
-                    if (field) {
-                        html += `<h2>${field}</h2><ul>`;
-                    }
-                    if (value) {
-                        html += `<li>${value}</li>`;
-                    }
-                    html += `</ul>`;
                     break;
             }
         }
 
-        // **Final HTML Assembly**
-        html = `
+        // **Final HTML Assembly Using Table Layout**
+        let html = `
             <div class="factsheet">
                 <div class="hero-section">
                     ${heroImage}
@@ -140,36 +137,68 @@ function renderFactsheet(data) {
                         ${tagline}
                     </div>
                 </div>
-                <div class="description-section">${description}</div>
-                <div class="features-section">
-                    <h2>Key Features</h2>
-                    <ul>${features}</ul>
-                </div>
-                <div class="pricing-section">
-                    <h2>Pricing</h2>
-                    ${pricing}
-                </div>
-                <div class="pros-cons-section">
-                    <h2>Pros & Cons</h2>
-                    <h3>Pros</h3><ul>${pros}</ul>
-                    <h3>Cons</h3><ul>${cons}</ul>
-                </div>
-                <div class="faq-section">
-                    <h2>Frequently Asked Questions</h2>
-                    <ul>${faq}</ul>
-                </div>
-                <div class="terms-section">
-                    <h2>Terms and Conditions</h2>
-                    ${terms}
-                </div>
+
+                <table class="product-table">
+                    <tr>
+                        <td colspan="2" class="section-title">Description</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">${description}</td>
+                    </tr>
+
+                    <tr>
+                        <td class="section-title">✅ Key Features / Benefits</td>
+                        <td class="section-title">📌 Ideal For</td>
+                    </tr>
+                    <tr>
+                        <td><ul>${features}</ul></td>
+                        <td><ul>${idealFor}</ul></td>
+                    </tr>
+
+                    <tr>
+                        <td colspan="2" class="section-title">💲 Pricing & Plans</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">${pricing}</td>
+                    </tr>
+
+                    <tr>
+                        <td colspan="2" class="section-title">❌ What is Excluded</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2"><ul>${exclusions}</ul></td>
+                    </tr>
+
+                    <tr>
+                        <td class="section-title">✅ Pros</td>
+                        <td class="section-title">❌ Cons</td>
+                    </tr>
+                    <tr>
+                        <td><ul>${pros}</ul></td>
+                        <td><ul>${cons}</ul></td>
+                    </tr>
+
+                    <tr>
+                        <td colspan="2" class="section-title">❓ Frequently Asked Questions</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2"><ul>${faq}</ul></td>
+                    </tr>
+
+                    <tr>
+                        <td colspan="2" class="section-title footer">🔗 Terms & Conditions | Contact Info</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">${terms}</td>
+                    </tr>
+                </table>
             </div>
         `;
-    } else {
-        html = '<p>No data found in the Google Sheet.</p>';
-    }
 
-    console.log("Final Rendered HTML:", html); // Log final HTML output
-    factsheetDiv.innerHTML = html;
+        factsheetDiv.innerHTML = html;
+    } else {
+        factsheetDiv.innerHTML = '<p>No data found in the Google Sheet.</p>';
+    }
 }
 
 
