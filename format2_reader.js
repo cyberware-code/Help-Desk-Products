@@ -32,7 +32,7 @@ function renderContent(data) {
             const value = row[1]; // Column B: Field Value
 
             // Output based on the field name
-            switch (field) {
+            switch (field ) {
                 case 'Product Name':
                     html += `<h1>${value}</h1>`;
                     break;
