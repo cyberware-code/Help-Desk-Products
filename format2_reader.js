@@ -8,7 +8,15 @@ function fetchSheetData() {
 
     fetch(url)
         .then(response => response.json())
-        .then(data => renderContent(data.values))
+        .then(data => {
+          // Check if data.values exists before calling renderContent
+          if (data && data.values) {
+              renderContent(data.values);
+          } else {
+              console.error('Error: data.values is undefined.  Check the Google Sheet ID, Sheet Name and API Key.');
+              document.getElementById('content').innerHTML = '<p>Error: Unable to load content.  Check the Google Sheet ID, Sheet Name and API Key.  See console for details.</p>';
+          }
+      })
         .catch(error => console.error('Error fetching data:', error));
 }
 
