@@ -28,8 +28,6 @@ function renderContent(data) {
     if (data && data.length > 1) {
         for (let i = 1; i < data.length; i++) {
             const row = data[i];
-            const field = row[0] || "Unknown Field";
-            const value = row[1] || "No value provided";
 
             switch (field) {
                 case 'Product Name': html += `<h1>${value}</h1>`; break;
