@@ -58,110 +58,47 @@ async function fetchSheetData(sheetName) {
 
 
 function renderFactsheet(data) {
+    console.log("Processed Data for Rendering:", data); // Debugging log
+
     const factsheetDiv = document.getElementById('factsheet');
     let html = '';
-    let heroImage = '';
-    let productName = '';
-    let tagline = '';
-    let description = '';
-    let features = '';
-    let idealFor = '';
-    let pricing = '';
-    let exclusions = '';
-    let pros = '';
-    let cons = '';
-    let faqs = '';
-    let terms = '';
+    let currentSection = ''; // Track the last valid section title
 
     if (data && data.length > 0) {
         for (let i = 0; i < data.length; i++) {
-            const row = data[i] || [];
-            const field = row[0] ? row[0].trim() : "";
-            const value = row[1] ? applyFormatting(row[1].trim()) : "";
+            const row = data[i].c || []; // Ensure row exists
+            console.log(`Row ${i}:`, row); // Debugging each row
 
-            switch (field) {
-                case "Image URL":
-                    heroImage = `<img src="${value}" alt="Product Image" class="hero-image">`;
-                    break;
-                case "Product Name":
-                    productName = `<h1>${value}</h1>`;
-                    break;
-                case "Tagline":
-                    tagline = `<h3>${value}</h3>`;
-                    break;
-                case "Description":
-                    description = `<p>${value}</p>`;
-                    break;
-                case "Key Features":
-                    features += `<li>${value}</li>`;
-                    break;
-                case "Ideal For":
-                    idealFor += `<li>${value}</li>`;
-                    break;
-                case "Pricing":
-                    pricing = `<p>${value}</p>`;
-                    break;
-                case "What is Excluded":
-                    exclusions += `<li>${value}</li>`;
-                    break;
-                case "Pros":
-                    pros += `<li>${value}</li>`;
-                    break;
-                case "Cons":
-                    cons += `<li>${value}</li>`;
-                    break;
-                case "Frequently Asked Questions":
-                    faqs += `<li>${value}</li>`;
-                    break;
-                case "Terms and Conditions":
-                    terms = `<p>${value}</p>`;
-                    break;
+            // Extract values safely
+            const field = row[0] && row[0].v ? row[0].v.trim() : currentSection;
+            const value = row[1] && row[1].v ? row[1].v.trim() : "";
+
+            // Skip completely empty rows
+            if (!field && !value) continue;
+
+            // **Handle Section Titles**
+            if (row[0] && row[0].v) {
+                if (currentSection !== "") {
+                    html += '</ul>'; // Close the previous section list
+                }
+                html += `<h2>${field}</h2><ul>`; // New section title
+                currentSection = field;
+            }
+
+            // **Handle Bullet Points (Values)**
+            if (value !== "") {
+                html += `<li>${value}</li>`;
             }
         }
-
-        html = `
-            ${heroImage}
-            <div class="header">
-                ${productName}
-                ${tagline}
-            </div>
-            <div class="description">${description}</div>
-            <div class="features">
-                <h2>Key Features</h2>
-                <ul>${features}</ul>
-            </div>
-            <div class="ideal-for">
-                <h2>Ideal For</h2>
-                <ul>${idealFor}</ul>
-            </div>
-            <div class="pricing">
-                <h2>Pricing</h2>
-                ${pricing}
-            </div>
-            <div class="exclusions">
-                <h2>What is Excluded</h2>
-                <ul>${exclusions}</ul>
-            </div>
-            <div class="pros-cons">
-                <h2>Pros & Cons</h2>
-                <h3>Pros</h3><ul>${pros}</ul>
-                <h3>Cons</h3><ul>${cons}</ul>
-            </div>
-            <div class="faq">
-                <h2>Frequently Asked Questions</h2>
-                <ul>${faqs}</ul>
-            </div>
-            <div class="footer">
-                <h2>Terms and Conditions</h2>
-                ${terms}
-            </div>
-        `;
+        html += '</ul>'; // Close last bullet list
     } else {
-        html = '<p>No data found in the Google Sheet.</p>';
+        html += '<p>No data found in the Google Sheet.</p>';
     }
 
+    console.log("Final Rendered HTML:", html); // Log final HTML output
     factsheetDiv.innerHTML = html;
 }
+
 
 function applyFormatting(text) {
     if (!text) return ""; 
