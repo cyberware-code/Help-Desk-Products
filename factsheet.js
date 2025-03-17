@@ -62,31 +62,31 @@ function renderFactsheet(data) {
 
     const factsheetDiv = document.getElementById('factsheet');
     let html = '';
-    let currentSection = ''; // Track the last valid section title
+    let currentSection = ''; // Store last valid section title
 
     if (data && data.length > 0) {
         for (let i = 0; i < data.length; i++) {
             const row = data[i].c || []; // Ensure row exists
             console.log(`Row ${i}:`, row); // Debugging each row
 
-            // Extract values safely
-            const field = row[0] && row[0].v ? row[0].v.trim() : currentSection;
-            const value = row[1] && row[1].v ? row[1].v.trim() : "";
+            // Extract values safely, handling cases where a value may be null
+            const field = row[0] && row[0].v ? row[0].v.trim() : "";  // Column A
+            const value = row[1] && row[1].v ? row[1].v.trim() : "";  // Column B
 
-            // Skip completely empty rows
+            // If both columns are empty, skip row
             if (!field && !value) continue;
 
-            // **Handle Section Titles**
-            if (row[0] && row[0].v) {
+            // **If Column A has a value, it's a new section header**
+            if (field) {
                 if (currentSection !== "") {
-                    html += '</ul>'; // Close the previous section list
+                    html += '</ul>'; // Close the previous bullet list
                 }
-                html += `<h2>${field}</h2><ul>`; // New section title
+                html += `<h2>${field}</h2><ul>`; // Start new section
                 currentSection = field;
             }
 
-            // **Handle Bullet Points (Values)**
-            if (value !== "") {
+            // **If Column A is empty but Column B has a value, it's a bullet point**
+            if (!field && value) {
                 html += `<li>${value}</li>`;
             }
         }
