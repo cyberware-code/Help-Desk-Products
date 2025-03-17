@@ -13,12 +13,14 @@
         <p>Loading product details...</p>
     </div>
 
-    <!-- Include the JavaScript File -->
+    <!-- Include JavaScript File -->
     <script src="factsheet.js"></script>
 
-    <!-- Load the Factsheet -->
+    <!-- Ensure we pass a valid sheet name -->
     <script>
-        fetchSheetData("Pay As You Go"); // Change this to dynamically load another sheet
+        const sheetName = "Pay As You Go"; // Change this to load a different sheet
+        console.log(`Loading factsheet for: '${sheetName}'`);
+        fetchSheetData(sheetName);
     </script>
 
 </body>
