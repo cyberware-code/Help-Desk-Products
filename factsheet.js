@@ -1,5 +1,4 @@
-const FACTSHEET_VERSION = "1.1.0"; // Increment when changes are made
-
+const FACTSHEET_VERSION = "1.2.0"; // Increment when changes are made
 console.log(`🚀 FACTSHEET SCRIPT VERSION: ${FACTSHEET_VERSION}`);
 
 function fetchSheetData(sheetName) {
@@ -67,24 +66,40 @@ function renderFactsheet(data) {
         return;
     }
 
+    let currentSection = null;
+    let multiLineSections = {
+        "What it Covers": [],
+        "Ideal For": [],
+        "What is Excluded": [],
+        "Pros": [],
+        "Cons": [],
+        "Frequently Asked Questions": [],
+        "Terms and Conditions": []
+    };
+
     if (data && data.length > 0) {
         for (let i = 0; i < data.length; i++) {
             const row = data[i].c || [];
             const field = row[0] && row[0].v ? row[0].v.trim() : "";
             let value = row[1] && row[1].v ? row[1].v.trim() : "";
 
-            if (!field.trim()) {
-                console.warn(`⚠️ Skipping row ${i} because it has no header.`);
+            if (!field.trim() && value) {
+                if (currentSection && multiLineSections[currentSection]) {
+                    console.log(`➕ Appending multi-line data to "${currentSection}":`, value);
+                    multiLineSections[currentSection].push(value.replace(/\n/g, "<br>"));
+                } else {
+                    console.warn(`⚠️ Skipping row ${i} because it has no header.`);
+                }
                 continue;
             }
 
             console.log(`➡️ Processing Row ${i}: Field='${field}', Value='${value}'`);
+            currentSection = field;
 
             switch (field) {
                 case "Image URL":
                     console.log("✔️ Setting Hero Image:", value);
-                    let imageUrl = value.trim();
-                    heroImage = `<img src="${imageUrl}" class="hero-image" alt="Product Image" 
+                    heroImage = `<img src="${value}" class="hero-image" alt="Product Image" 
                           onerror="this.onerror=null; this.src='https://via.placeholder.com/600x400?text=No+Image+Available';">`;
                     break;
 
@@ -103,13 +118,24 @@ function renderFactsheet(data) {
                     description = `<p class="product-description">${value.replace(/\n/g, "<br>")}</p>`;
                     break;
 
+                case "Unit Cost":
+                case "Unit Price":
+                    console.log(`📌 Setting Pricing Info: ${field} - ${value}`);
+                    pricing += `<strong>${field}:</strong> ${value.replace(/\n/g, "<br>")}<br>`;
+                    break;
+
                 case "Terms and Conditions":
                     console.log(`📌 Processing "Terms and Conditions"`);
                     terms = `<p class="product-terms">${value.replace(/\n/g, "<br>")}</p>`;
                     break;
 
                 default:
-                    console.warn(`⚠️ Unrecognized Field: '${field}' with Value: '${value}'`);
+                    if (multiLineSections[field] !== undefined) {
+                        console.log(`📌 Processing Multi-line Section: "${field}"`);
+                        multiLineSections[field].push(value.replace(/\n/g, "<br>"));
+                    } else {
+                        console.warn(`⚠️ Unrecognized Field: '${field}' with Value: '${value}'`);
+                    }
                     break;
             }
         }
