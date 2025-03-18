@@ -1,4 +1,4 @@
-const FACTSHEET_VERSION = "1.3.2"; // Updated version
+const FACTSHEET_VERSION = "1.3.4"; // Updated version
 console.log(`🚀 FACTSHEET SCRIPT VERSION: ${FACTSHEET_VERSION}`);
 
 function fetchSheetData(sheetName) {
@@ -9,8 +9,8 @@ function fetchSheetData(sheetName) {
 
     console.log("📢 Fetching data for sheet:", sheetName);
 
-    const SHEET_ID = '19U1S1RD2S0dY_zKgE2CPmTp-5O4VUSfXCCC0qLg0oq0';
-    const API_KEY = 'AIzaSyBm8quffA_U1BTUnbBxXeLKuHYyEzLFX7E';
+    const SHEET_ID = '19U1S1RD2S0dY_zKgE2CPmTp-5O4VUSfXCCC0qLg0oq0'; // Google Spreadsheet ID
+    const API_KEY = 'AIzaSyBm8quffA_U1BTUnbBxXeLKuHYyEzLFX7E'; // API Key
 
     const metadataUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}?key=${API_KEY}`;
 
@@ -55,12 +55,10 @@ function fetchSheetData(sheetName) {
 }
 
 function renderFactsheet(data) {
-    console.log(`📌 Processing Data for Rendering (Version: ${FACTSHEET_VERSION})`, data);
+    console.log("📌 Processing Data for Rendering (Version:", FACTSHEET_VERSION, ")", data);
 
     let html = "";
-    let heroImage = '', productName = '', tagline = '', description = '', terms = '', pricing = "";
-    let sections = {}; // Store dynamically recognized sections
-    let pros = [], cons = []; // Store Pros & Cons separately for inline display
+    let heroImage = '', productName = '', tagline = '', description = '', features = '', idealFor = '', pricing = '', exclusions = '', pros = '', cons = '', faq = '', terms = '';
 
     const factsheetDiv = document.getElementById('factsheet');
     if (!factsheetDiv) {
@@ -68,40 +66,24 @@ function renderFactsheet(data) {
         return;
     }
 
-    let currentSection = null;
-    let multiLineSections = new Set([
-        "What it Covers", "Ideal For", "What is Excluded",
-        "Frequently Asked Questions", "Terms and Conditions"
-    ]);
-
     if (data && data.length > 0) {
         for (let i = 0; i < data.length; i++) {
             const row = data[i].c || [];
             const field = row[0] && row[0].v ? row[0].v.trim() : "";
             let value = row[1] && row[1].v ? row[1].v.trim() : "";
 
-            if (!field.trim() && value) {
-                if (currentSection && multiLineSections.has(currentSection)) {
-                    if (!sections[currentSection]) sections[currentSection] = []; // ✅ Ensure array exists
-                    console.log(`➕ Appending to "${currentSection}":`, value);
-                    sections[currentSection].push(value.replace(/\n/g, "<br>"));
-                } else if (currentSection === "Pros") {
-                    pros.push(value);
-                } else if (currentSection === "Cons") {
-                    cons.push(value);
-                } else {
-                    console.warn(`⚠️ Skipping row ${i} because it has no header.`);
-                }
+            if (!field.trim()) {
+                console.warn(`⚠️ Skipping row ${i} because it has no header.`);
                 continue;
             }
 
             console.log(`➡️ Processing Row ${i}: Field='${field}', Value='${value}'`);
-            currentSection = field;
 
             switch (field) {
                 case "Image URL":
                     console.log("✔️ Setting Hero Image:", value);
-                    heroImage = `<img src="${value}" class="hero-image" alt="Product Image" 
+                    let imageUrl = value.trim();
+                    heroImage = `<img src="${imageUrl}" class="hero-image" alt="Product Image" 
                           onerror="this.onerror=null; this.src='https://via.placeholder.com/600x400?text=No+Image+Available';">`;
                     break;
 
@@ -123,7 +105,17 @@ function renderFactsheet(data) {
                 case "Unit Cost":
                 case "Unit Price":
                     console.log(`📌 Setting Pricing Info: ${field} - ${value}`);
-                    pricing += `<tr><td class="label">${field}:</td><td class="value">${value}</td></tr>`;
+                    pricing += `<strong>${field}:</strong> ${value.replace(/\n/g, "<br>")}<br>`;
+                    break;
+
+                case "Pros":
+                    console.log(`📌 Processing "Pros"`);
+                    pros += `<li>${value.replace(/\n/g, "<br>")}</li>`;
+                    break;
+
+                case "Cons":
+                    console.log(`📌 Processing "Cons"`);
+                    cons += `<li>${value.replace(/\n/g, "<br>")}</li>`;
                     break;
 
                 case "Terms and Conditions":
@@ -131,39 +123,13 @@ function renderFactsheet(data) {
                     terms = `<p class="product-terms">${value.replace(/\n/g, "<br>")}</p>`;
                     break;
 
-                case "Pros":
-                    console.log(`📌 Processing Pros`);
-                    pros.push(value);
-                    break;
-
-                case "Cons":
-                    console.log(`📌 Processing Cons`);
-                    cons.push(value);
-                    break;
-
                 default:
-                    if (multiLineSections.has(field)) {
-                        console.log(`📌 Processing Multi-line Section: "${field}"`);
-                        sections[field] = [value.replace(/\n/g, "<br>")]; // ✅ Ensure array initialization
-                    } else {
-                        console.warn(`⚠️ Unrecognized Field: '${field}' with Value: '${value}'`);
-                    }
+                    console.warn(`⚠️ Unrecognized Field: '${field}' with Value: '${value}'`);
                     break;
             }
         }
 
-        // Generate HTML dynamically for all sections
-        let sectionsHtml = "";
-        Object.keys(sections).forEach(section => {
-            if (sections[section] && sections[section].length > 0) {
-                sectionsHtml += `
-                    <tr><td colspan="2" class="section-title">${section}</td></tr>
-                    <tr><td colspan="2"><ul class="section-list">
-                        ${sections[section].map(item => `<li>${item}</li>`).join("")}
-                    </ul></td></tr>`;
-            }
-        });
-
+        // ✅ Final HTML Output
         html = `
             <div class="factsheet">
                 <div class="hero-section">
@@ -178,13 +144,20 @@ function renderFactsheet(data) {
                     <tr><td colspan="2" class="section-title">Description</td></tr>
                     <tr><td colspan="2">${description}</td></tr>
 
-                    ${sectionsHtml}
+                    <tr><td colspan="2" class="section-title">💲 Pricing</td></tr>
+                    <tr><td colspan="2">${pricing}</td></tr>
 
-                    <tr><td colspan="2" class="section-title">Pricing</td></tr>
-                    ${pricing}
-
-                    <tr><td class="label">Pros:</td><td class="value">${pros.join(", ")}</td></tr>
-                    <tr><td class="label">Cons:</td><td class="value">${cons.join(", ")}</td></tr>
+                    <tr><td colspan="2" class="section-title">✅ Pros & ❌ Cons</td></tr>
+                    <tr>
+                        <td class="pros-column">
+                            <h3>✅ Pros</h3>
+                            <ul>${pros}</ul>
+                        </td>
+                        <td class="cons-column">
+                            <h3>❌ Cons</h3>
+                            <ul>${cons}</ul>
+                        </td>
+                    </tr>
 
                     <tr><td colspan="2" class="section-title footer">🔗 Terms & Conditions | Contact Info</td></tr>
                     <tr><td colspan="2">${terms}</td></tr>
@@ -192,9 +165,10 @@ function renderFactsheet(data) {
             </div>
         `;
 
-        console.log("🚀 Final Generated HTML Output:", html);
+        console.log("🚀 Final Generated HTML Output (Version:", FACTSHEET_VERSION, "):", html);
         factsheetDiv.innerHTML = html;
     }
 }
 
+// ✅ Fetch Data and Render Factsheet
 fetchSheetData("Pay As You Go");
