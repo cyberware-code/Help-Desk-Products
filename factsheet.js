@@ -78,15 +78,19 @@ function renderFactsheet(data) {
                 continue;
             }
             
-
-            if (!field && !value) continue;
+            if (!field || field.trim() === "") {
+                console.warn(`⚠️ Skipping row due to missing field name. Value: '${value}'`);
+                continue;
+            }
+            
 
             console.log(`➡️ Processing Row ${i}: Field='${field}', Value='${value}'`);
 
             switch (field) {
                 case "Image URL":
                     console.log(`✔️ Setting Hero Image: ${value}`);
-                    heroImage = `<img src="${value}" class="hero-image" alt="Product Image" onerror="this.onerror=null; this.src='fallback.jpg';">`;
+                    let imageUrl = value.trim(); // Remove any unwanted whitespace or newline characters
+                    heroImage = `<img src="${imageUrl}" class="hero-image" alt="Product Image" onerror="this.onerror=null; this.src='fallback.jpg';">`;
                     break;
                 case "Product Name":
                     console.log(`✔️ Setting Product Name: ${value}`);
@@ -137,6 +141,7 @@ function renderFactsheet(data) {
                     break;
             }
         }
+        let html="";
 
         // ✅ Ensure `html` is correctly built before rendering
         html = `
