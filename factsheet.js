@@ -1,6 +1,6 @@
 function fetchSheetData(sheetName) {
     if (!sheetName) {
-        console.error("Error: No valid sheet name provided.");
+        console.error("❌ Error: No valid sheet name provided.");
         return;
     }
 
@@ -11,7 +11,7 @@ function fetchSheetData(sheetName) {
 
     const metadataUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}?key=${API_KEY}`;
 
-    fetch(metadataUrl)
+    return fetch(metadataUrl)
         .then(response => response.json())
         .then(metadata => {
             if (!metadata.sheets) throw new Error("❌ Could not retrieve sheet metadata.");
@@ -24,9 +24,10 @@ function fetchSheetData(sheetName) {
             const sheetGID = sheet.properties.sheetId;
             console.log(`✔️ Sheet '${sheetName}' found with GID: ${sheetGID}`);
 
-            const dataUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&tq=&gid=${sheetGID}`;
+            return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&tq=&gid=${sheetGID}`;
+        })
+        .then(dataUrl => {
             console.log(`📡 Fetching Data from URL: ${dataUrl}`);
-
             return fetch(dataUrl);
         })
         .then(response => response.text())
@@ -65,38 +66,107 @@ function renderFactsheet(data) {
 
             if (!field && !value) continue;
 
-            console.log(`➡️ Processing: ${field} = ${value}`);
+            console.log(`➡️ Processing Row ${i}: Field='${field}', Value='${value}'`);
 
             switch (field) {
-                case "Image URL": heroImage = `<img src="${value}" class="hero-image">`; break;
-                case "Product Name": productName = `<h1>${value}</h1>`; break;
-                case "Tagline": tagline = `<h3>${value}</h3>`; break;
-                case "Description": description = `<p>${value}</p>`; break;
-                case "Key Features": features += `<li>${value}</li>`; break;
-                case "Ideal For": idealFor += `<li>${value}</li>`; break;
-                case "Pricing": pricing = `<p>${value}</p>`; break;
-                case "What is Excluded": exclusions += `<li>${value}</li>`; break;
-                case "Pros": pros += `<li>${value}</li>`; break;
-                case "Cons": cons += `<li>${value}</li>`; break;
-                case "Frequently Asked Questions": faq += `<li>${value}</li>`; break;
-                case "Terms and Conditions": terms = `<p>${value}</p>`; break;
-                default: console.warn(`⚠️ Unrecognized Field: ${field}`); break;
+                case "Image URL":
+                    console.log(`✔️ Setting Hero Image: ${value}`);
+                    heroImage = `<img src="${value}" class="hero-image">`; 
+                    break;
+                case "Product Name":
+                    console.log(`✔️ Setting Product Name: ${value}`);
+                    productName = `<h1 class="product-title">${value}</h1>`; 
+                    break;
+                case "Tagline":
+                    console.log(`✔️ Setting Tagline: ${value}`);
+                    tagline = `<h3 class="product-tagline">${value}</h3>`; 
+                    break;
+                case "Description":
+                    console.log(`✔️ Setting Description: ${value}`);
+                    description = `<p class="product-description">${value}</p>`; 
+                    break;
+                case "Key Features":
+                    console.log(`✔️ Adding Key Feature: ${value}`);
+                    features += `<li>${value}</li>`; 
+                    break;
+                case "Ideal For":
+                    console.log(`✔️ Adding Ideal For: ${value}`);
+                    idealFor += `<li>${value}</li>`; 
+                    break;
+                case "Pricing":
+                    console.log(`✔️ Setting Pricing: ${value}`);
+                    pricing = `<p class="product-pricing">${value}</p>`; 
+                    break;
+                case "What is Excluded":
+                    console.log(`✔️ Adding Exclusion: ${value}`);
+                    exclusions += `<li>${value}</li>`; 
+                    break;
+                case "Pros":
+                    console.log(`✔️ Adding Pro: ${value}`);
+                    pros += `<li>${value}</li>`; 
+                    break;
+                case "Cons":
+                    console.log(`✔️ Adding Con: ${value}`);
+                    cons += `<li>${value}</li>`; 
+                    break;
+                case "Frequently Asked Questions":
+                    console.log(`✔️ Adding FAQ: ${value}`);
+                    faq += `<li>${value}</li>`; 
+                    break;
+                case "Terms and Conditions":
+                    console.log(`✔️ Setting Terms & Conditions: ${value}`);
+                    terms = `<p class="product-terms">${value}</p>`; 
+                    break;
+                default:
+                    console.warn(`⚠️ Unrecognized Field: '${field}' with Value: '${value}'`); 
+                    break;
             }
         }
 
         factsheetDiv.innerHTML = `
             <div class="factsheet">
-                ${heroImage}
-                ${productName} ${tagline}
-                <p>${description}</p>
-                <ul>${features}</ul>
-                <ul>${idealFor}</ul>
-                <p>${pricing}</p>
-                <ul>${exclusions}</ul>
-                <ul>${pros}</ul>
-                <ul>${cons}</ul>
-                <ul>${faq}</ul>
-                <p>${terms}</p>
+                <div class="hero-section">
+                    ${heroImage}
+                    <div class="title-container">
+                        ${productName}
+                        ${tagline}
+                    </div>
+                </div>
+
+                <table class="product-table">
+                    <tr><td colspan="2" class="section-title">Description</td></tr>
+                    <tr><td colspan="2">${description}</td></tr>
+
+                    <tr>
+                        <td class="section-title">✅ Key Features</td>
+                        <td class="section-title">📌 Ideal For</td>
+                    </tr>
+                    <tr>
+                        <td><ul>${features}</ul></td>
+                        <td><ul>${idealFor}</ul></td>
+                    </tr>
+
+                    <tr><td colspan="2" class="section-title">💲 Pricing</td></tr>
+                    <tr><td colspan="2">${pricing}</td></tr>
+
+                    <tr><td colspan="2" class="section-title">❌ What is Excluded</td></tr>
+                    <tr><td colspan="2"><ul>${exclusions}</ul></td></tr>
+
+                    <tr>
+                        <td class="section-title">✅ Pros</td>
+                        <td class="section-title">❌ Cons</td>
+                    </tr>
+                    <tr>
+                        <td><ul>${pros}</ul></td>
+                        <td><ul>${cons}</ul></td>
+                    </tr>
+
+                    <tr><td colspan="2" class="section-title">❓ FAQs</td></tr>
+                    <tr><td colspan="2"><ul>${faq}</ul></td></tr>
+
+                    <tr><td colspan="2" class="section-title footer">🔗 Terms & Conditions | Contact Info</td></tr>
+                    <tr><td colspan="2">${terms}</td></tr>
+                </table>
             </div>
         `;
     } else {
