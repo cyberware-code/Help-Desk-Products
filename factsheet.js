@@ -52,10 +52,19 @@ function fetchSheetData(sheetName) {
 }
 
 // **Step 3: Render the Fetched Data into a Fact Sheet**
+
+// ✅ Ensure `fetchSheetData()` is called
 function renderFactsheet(data) {
     console.log("📌 Processing Data for Rendering:", data);
 
     const factsheetDiv = document.getElementById('factsheet');
+    if (!factsheetDiv) {
+        console.error("❌ Error: #factsheet div not found in index.html");
+        return;
+    }
+
+    // ✅ Declare `html` properly
+    let html = "";
     let heroImage = '', productName = '', tagline = '', description = '', features = '', idealFor = '', pricing = '', exclusions = '', pros = '', cons = '', faq = '', terms = '';
 
     if (data && data.length > 0) {
@@ -64,6 +73,12 @@ function renderFactsheet(data) {
             const field = row[0] && row[0].v ? row[0].v.trim() : "";
             const value = row[1] && row[1].v ? row[1].v.trim() : "";
 
+            if (!field.trim()) {
+                console.warn(`⚠️ Skipping row ${i} because it has no header.`);
+                continue;
+            }
+            
+
             if (!field && !value) continue;
 
             console.log(`➡️ Processing Row ${i}: Field='${field}', Value='${value}'`);
@@ -71,64 +86,63 @@ function renderFactsheet(data) {
             switch (field) {
                 case "Image URL":
                     console.log(`✔️ Setting Hero Image: ${value}`);
-                    heroImage = `<img src="${value}" class="hero-image">`; 
+                    heroImage = `<img src="${value}" class="hero-image" alt="Product Image" onerror="this.onerror=null; this.src='fallback.jpg';">`;
                     break;
                 case "Product Name":
                     console.log(`✔️ Setting Product Name: ${value}`);
-                    productName = `<h1 class="product-title">${value}</h1>`; 
+                    productName = `<h1 class="product-title">${value}</h1>`;
                     break;
                 case "Tagline":
                     console.log(`✔️ Setting Tagline: ${value}`);
-                    tagline = `<h3 class="product-tagline">${value}</h3>`; 
+                    tagline = `<h3 class="product-tagline">${value}</h3>`;
                     break;
                 case "Description":
                     console.log(`✔️ Setting Description: ${value}`);
-                    description = `<p class="product-description">${value}</p>`; 
+                    description = `<p class="product-description">${value}</p>`;
                     break;
                 case "Key Features":
                     console.log(`✔️ Adding Key Feature: ${value}`);
-                    features += `<li>${value}</li>`; 
+                    features += `<li>${value}</li>`;
                     break;
                 case "Ideal For":
                     console.log(`✔️ Adding Ideal For: ${value}`);
-                    idealFor += `<li>${value}</li>`; 
+                    idealFor += `<li>${value}</li>`;
                     break;
                 case "Pricing":
                     console.log(`✔️ Setting Pricing: ${value}`);
-                    pricing = `<p class="product-pricing">${value}</p>`; 
+                    pricing = `<p class="product-pricing">${value}</p>`;
                     break;
                 case "What is Excluded":
                     console.log(`✔️ Adding Exclusion: ${value}`);
-                    exclusions += `<li>${value}</li>`; 
+                    exclusions += `<li>${value}</li>`;
                     break;
                 case "Pros":
                     console.log(`✔️ Adding Pro: ${value}`);
-                    pros += `<li>${value}</li>`; 
+                    pros += `<li>${value}</li>`;
                     break;
                 case "Cons":
                     console.log(`✔️ Adding Con: ${value}`);
-                    cons += `<li>${value}</li>`; 
+                    cons += `<li>${value}</li>`;
                     break;
                 case "Frequently Asked Questions":
                     console.log(`✔️ Adding FAQ: ${value}`);
-                    faq += `<li>${value}</li>`; 
+                    faq += `<li>${value}</li>`;
                     break;
                 case "Terms and Conditions":
                     console.log(`✔️ Setting Terms & Conditions: ${value}`);
-                    terms = `<p class="product-terms">${value}</p>`; 
+                    terms = `<p class="product-terms">${value}</p>`;
                     break;
                 default:
-                    console.warn(`⚠️ Unrecognized Field: '${field}' with Value: '${value}'`); 
+                    console.warn(`⚠️ Unrecognized Field: '${field}' with Value: '${value}'`);
                     break;
             }
         }
-        
-        console.log("🚀 Final Generated HTML Output:", html);
 
-        factsheetDiv.innerHTML = `
+        // ✅ Ensure `html` is correctly built before rendering
+        html = `
             <div class="factsheet">
                 <div class="hero-section">
-                    ${heroImage}
+                    ${heroImage ? heroImage : '<p>❌ No Image Available</p>'}
                     <div class="title-container">
                         ${productName}
                         ${tagline}
@@ -171,11 +185,19 @@ function renderFactsheet(data) {
                 </table>
             </div>
         `;
+
+        console.log("🚀 Final Generated HTML Output:", html);
+
+        // ✅ Ensure HTML is set correctly
+        if (!html.trim()) {
+            console.error("❌ HTML content is empty before rendering!");
+        } else {
+            factsheetDiv.innerHTML = html;
+        }
     } else {
         console.error("❌ No valid data found.");
         factsheetDiv.innerHTML = '<p>No data found in the Google Sheet.</p>';
     }
 }
 
-// ✅ Ensure `fetchSheetData()` is called
 fetchSheetData("Pay As You Go");
