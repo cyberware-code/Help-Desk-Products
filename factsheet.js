@@ -24,7 +24,7 @@ function fetchSheetData(sheetName) {
             if (!sheet) throw new Error(`Error: Sheet '${sheetName}' not found.`);
 
             const sheetGID = sheet.properties.sheetId;
-            console.log(`Sheet '${sheetName}' found with GID: ${sheetGID}`);
+            console.log(`Sheet Hello'${sheetName}' found with GID: ${sheetGID}`);
 
             // **Step 2: Fetch Data from the Correct Sheet GID**
             const dataUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&tq=&gid=${sheetGID}`;
