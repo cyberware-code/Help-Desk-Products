@@ -57,17 +57,13 @@ function fetchSheetData(sheetName) {
 function renderFactsheet(data) {
     console.log("📌 Processing Data for Rendering:", data);
 
-    // ✅ Declare `html` properly
-    let html = "";
-    
-
+    let html = ""; // ✅ Ensure `html` is initialized
     const factsheetDiv = document.getElementById('factsheet');
     if (!factsheetDiv) {
         console.error("❌ Error: #factsheet div not found in index.html");
         return;
     }
 
-    
     let heroImage = '', productName = '', tagline = '', description = '', features = '', idealFor = '', pricing = '', exclusions = '', pros = '', cons = '', faq = '', terms = '';
 
     if (data && data.length > 0) {
@@ -80,152 +76,135 @@ function renderFactsheet(data) {
                 console.warn(`⚠️ Skipping row ${i} because it has no header.`);
                 continue;
             }
-            
-            if (!field || field.trim() === "") {
-                console.warn(`⚠️ Skipping row due to missing field name. Value: '${value}'`);
-                continue;
-            }
-            
 
             console.log(`➡️ Processing Row ${i}: Field='${field}', Value='${value}'`);
 
             switch (field) {
                 case "Image URL":
-                    console.log("✔️ Setting Hero Image:", value); // Debug log
-                    let imageUrl = value ? value.trim() : ""; // Ensure valid URL
-       
-                    // Ensure fallback image is used if the original fails
+                    console.log("✔️ Setting Hero Image:", value);
+                    let imageUrl = value ? value.trim() : "";
                     heroImage = `<img src="${imageUrl}" class="hero-image" alt="Product Image" 
                           onerror="this.onerror=null; this.src='https://via.placeholder.com/600x400?text=No+Image+Available';">`;
                     break;
-                    
-            
+
                 case "Product Name":
                     console.log(`📌 Setting Product Name: ${value}`);
-                    html += `<h1 class="product-title">${value}</h1>`;
+                    productName = `<h1 class="product-title">${value}</h1>`;
                     break;
-            
+
                 case "Tagline":
                     console.log(`📌 Setting Tagline: ${value}`);
-                    html += `<h3 class="product-tagline">${value}</h3>`;
+                    tagline = `<h3 class="product-tagline">${value}</h3>`;
                     break;
-            
+
                 case "Description":
                     console.log(`📌 Setting Description: ${value}`);
-                    html += `<tr><td colspan="2" class="section-title">Description</td></tr>
-                             <tr><td colspan="2"><p class="product-description">${value}</p></td></tr>`;
+                    description = `<p class="product-description">${value}</p>`;
                     break;
-            
+
                 case "What it Covers":
                     console.log(`📌 Processing "What it Covers"`);
-                    html += `<tr><td colspan="2" class="section-title">✅ Key Features</td></tr><tr><td colspan="2"><ul>`;
-                    for (let i = rowIndex + 1; i < data.length; i++) {
-                        if (!data[i].field) {
-                            console.log(`➕ Adding Key Feature: ${data[i].value}`);
-                            html += `<li>${data[i].value}</li>`; 
-                        } else {
-                            break; 
-                        }
-                    }
-                    html += `</ul></td></tr>`;
-                    break;
-            
-                case "Ideal For":
-                    console.log(`📌 Processing "Ideal For"`);
-                    html += `<tr><td colspan="2" class="section-title">📌 Ideal For</td></tr><tr><td colspan="2"><ul>`;
-                    let idealForList = "";
-                    for (let i = rowIndex + 1; i < data.length; i++) {
-                        if (!data[i].field) {
-                            console.log(`➕ Adding Ideal For: ${data[i].value}`);
-                            idealForList += `<li>${data[i].value}</li>`;
+                    features = `<ul>`;
+                    for (let j = i + 1; j < data.length; j++) {
+                        if (!data[j].c[0]) {
+                            console.log(`➕ Adding Key Feature: ${data[j].c[1].v}`);
+                            features += `<li>${data[j].c[1].v}</li>`;
                         } else {
                             break;
                         }
                     }
-                    html += idealForList || "<li>Not specified</li>";
-                    html += `</ul></td></tr>`;
+                    features += `</ul>`;
                     break;
-            
+
+                case "Ideal For":
+                    console.log(`📌 Processing "Ideal For"`);
+                    idealFor = `<ul>`;
+                    for (let j = i + 1; j < data.length; j++) {
+                        if (!data[j].c[0]) {
+                            console.log(`➕ Adding Ideal For: ${data[j].c[1].v}`);
+                            idealFor += `<li>${data[j].c[1].v}</li>`;
+                        } else {
+                            break;
+                        }
+                    }
+                    idealFor += `</ul>`;
+                    break;
+
                 case "Unit Cost":
                 case "Unit Price":
                     console.log(`📌 Setting Pricing Info: ${field} - ${value}`);
-                    html += `<tr><td colspan="2" class="section-title">💲 Pricing</td></tr>
-                             <tr><td colspan="2"><strong>${field}:</strong> ${value}</td></tr>`;
+                    pricing = `<strong>${field}:</strong> ${value}`;
                     break;
-            
+
                 case "What is Excluded":
                     console.log(`📌 Processing "What is Excluded"`);
-                    html += `<tr><td colspan="2" class="section-title">❌ What is Excluded</td></tr><tr><td colspan="2"><ul>`;
-                    let exclusions = `<li>${value}</li>`;
-                    for (let i = rowIndex + 1; i < data.length; i++) {
-                        if (!data[i].field) {
-                            console.log(`➕ Adding Exclusion: ${data[i].value}`);
-                            exclusions += `<li>${data[i].value}</li>`;
+                    exclusions = `<ul><li>${value}</li>`;
+                    for (let j = i + 1; j < data.length; j++) {
+                        if (!data[j].c[0]) {
+                            console.log(`➕ Adding Exclusion: ${data[j].c[1].v}`);
+                            exclusions += `<li>${data[j].c[1].v}</li>`;
                         } else {
                             break;
                         }
                     }
-                    html += exclusions;
-                    html += `</ul></td></tr>`;
+                    exclusions += `</ul>`;
                     break;
-            
+
                 case "Pros":
                     console.log(`📌 Processing "Pros"`);
-                    html += `<tr><td colspan="2" class="section-title">✅ Pros</td></tr><tr><td colspan="2"><ul><li>${value}</li>`;
-                    for (let i = rowIndex + 1; i < data.length; i++) {
-                        if (!data[i].field) {
-                            console.log(`➕ Adding Pro: ${data[i].value}`);
-                            html += `<li>${data[i].value}</li>`;
+                    pros = `<ul><li>${value}</li>`;
+                    for (let j = i + 1; j < data.length; j++) {
+                        if (!data[j].c[0]) {
+                            console.log(`➕ Adding Pro: ${data[j].c[1].v}`);
+                            pros += `<li>${data[j].c[1].v}</li>`;
                         } else {
                             break;
                         }
                     }
-                    html += `</ul></td></tr>`;
+                    pros += `</ul>`;
                     break;
-            
+
                 case "Cons":
                     console.log(`📌 Processing "Cons"`);
-                    html += `<tr><td colspan="2" class="section-title">❌ Cons</td></tr><tr><td colspan="2"><ul><li>${value}</li>`;
-                    for (let i = rowIndex + 1; i < data.length; i++) {
-                        if (!data[i].field) {
-                            console.log(`➕ Adding Con: ${data[i].value}`);
-                            html += `<li>${data[i].value}</li>`;
+                    cons = `<ul><li>${value}</li>`;
+                    for (let j = i + 1; j < data.length; j++) {
+                        if (!data[j].c[0]) {
+                            console.log(`➕ Adding Con: ${data[j].c[1].v}`);
+                            cons += `<li>${data[j].c[1].v}</li>`;
                         } else {
                             break;
                         }
                     }
-                    html += `</ul></td></tr>`;
+                    cons += `</ul>`;
                     break;
-            
+
                 case "Frequently Asked Questions":
-                    console.log(`📌 Processing "Frequently Asked Questions"`);
-                    html += `<tr><td colspan="2" class="section-title">❓ FAQs</td></tr><tr><td colspan="2"><ul><li>${value}</li></ul></td></tr>`;
+                    console.log(`📌 Processing "FAQs"`);
+                    faq = `<ul><li>${value}</li></ul>`;
                     break;
-            
+
                 case "Terms and Conditions":
                     console.log(`📌 Processing "Terms and Conditions"`);
-                    html += `<tr><td colspan="2" class="section-title footer">🔗 Terms & Conditions | Contact Info</td></tr>
-                             <tr><td colspan="2"><p class="product-terms">${value || "Not provided"}</p></td></tr>`;
+                    terms = `<p class="product-terms">${value || "Not provided"}</p>`;
                     break;
-            
+
                 default:
                     console.warn(`⚠️ Unrecognized Field: '${field}' with Value: '${value}'`);
                     break;
-                }
             }
-        
+        }
 
         // ✅ Ensure `html` is correctly built before rendering
-        html += `
+        html = `
             <div class="factsheet">
                 <div class="hero-section">
                     ${heroImage}
                     <div class="title-container">
-                        <h1 class="product-title">Pay-As-You-Go IT Support</h1>
-                        <h3 class="product-tagline">If you want to get ahead... Get a Hat. Making excellence a Rabbit.</h3>
+                        ${productName}
+                        ${tagline}
                     </div>
                 </div>
-                
+
                 <table class="product-table">
                     <tr><td colspan="2" class="section-title">Description</td></tr>
                     <tr><td colspan="2">${description}</td></tr>
@@ -235,27 +214,27 @@ function renderFactsheet(data) {
                         <td class="section-title">📌 Ideal For</td>
                     </tr>
                     <tr>
-                        <td><ul>${features}</ul></td>
-                        <td><ul>${idealFor}</ul></td>
+                        <td>${features}</td>
+                        <td>${idealFor}</td>
                     </tr>
 
                     <tr><td colspan="2" class="section-title">💲 Pricing</td></tr>
                     <tr><td colspan="2">${pricing}</td></tr>
 
                     <tr><td colspan="2" class="section-title">❌ What is Excluded</td></tr>
-                    <tr><td colspan="2"><ul>${exclusions}</ul></td></tr>
+                    <tr><td colspan="2">${exclusions}</td></tr>
 
                     <tr>
                         <td class="section-title">✅ Pros</td>
                         <td class="section-title">❌ Cons</td>
                     </tr>
                     <tr>
-                        <td><ul>${pros}</ul></td>
-                        <td><ul>${cons}</ul></td>
+                        <td>${pros}</td>
+                        <td>${cons}</td>
                     </tr>
 
                     <tr><td colspan="2" class="section-title">❓ FAQs</td></tr>
-                    <tr><td colspan="2"><ul>${faq}</ul></td></tr>
+                    <tr><td colspan="2">${faq}</td></tr>
 
                     <tr><td colspan="2" class="section-title footer">🔗 Terms & Conditions | Contact Info</td></tr>
                     <tr><td colspan="2">${terms}</td></tr>
@@ -264,13 +243,7 @@ function renderFactsheet(data) {
         `;
 
         console.log("🚀 Final Generated HTML Output:", html);
-
-        // ✅ Ensure HTML is set correctly
-        if (!html.trim()) {
-            console.error("❌ HTML content is empty before rendering!");
-        } else {
-            factsheetDiv.innerHTML = html;
-        }
+        factsheetDiv.innerHTML = html;
     } else {
         console.error("❌ No valid data found.");
         factsheetDiv.innerHTML = '<p>No data found in the Google Sheet.</p>';
