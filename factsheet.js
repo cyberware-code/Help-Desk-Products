@@ -53,20 +53,21 @@ function fetchSheetData(sheetName) {
 function renderFactsheet(data) {
     console.log("📌 Processing Data for Rendering:", data);
 
-    let html = ""; // ✅ Ensure `html` is initialized
+    // ✅ Declare `html` properly
+    let html = "";
+    let heroImage = '', productName = '', tagline = '', description = '', features = '', idealFor = '', pricing = '', exclusions = '', pros = '', cons = '', faq = '', terms = '';
+
     const factsheetDiv = document.getElementById('factsheet');
     if (!factsheetDiv) {
         console.error("❌ Error: #factsheet div not found in index.html");
         return;
     }
 
-    let heroImage = '', productName = '', tagline = '', description = '', features = '', idealFor = '', pricing = '', exclusions = '', pros = '', cons = '', faq = '', terms = '';
-
     if (data && data.length > 0) {
         for (let i = 0; i < data.length; i++) {
             const row = data[i].c || [];
             const field = row[0] && row[0].v ? row[0].v.trim() : "";
-            const value = row[1] && row[1].v ? row[1].v.trim() : "";
+            let value = row[1] && row[1].v ? row[1].v.trim() : "";
 
             if (!field.trim()) {
                 console.warn(`⚠️ Skipping row ${i} because it has no header.`);
@@ -78,7 +79,7 @@ function renderFactsheet(data) {
             switch (field) {
                 case "Image URL":
                     console.log("✔️ Setting Hero Image:", value);
-                    let imageUrl = value ? value.trim() : "";
+                    let imageUrl = value.trim();
                     heroImage = `<img src="${imageUrl}" class="hero-image" alt="Product Image" 
                           onerror="this.onerror=null; this.src='https://via.placeholder.com/600x400?text=No+Image+Available';">`;
                     break;
@@ -95,16 +96,16 @@ function renderFactsheet(data) {
 
                 case "Description":
                     console.log(`📌 Setting Description: ${value}`);
-                    description = `<p class="product-description">${value}</p>`;
+                    description = `<p class="product-description">${value.replace(/\n/g, "<br>")}</p>`;
                     break;
 
                 case "What it Covers":
                     console.log(`📌 Processing "What it Covers"`);
-                    features = `<ul>`;
+                    features = `<ul><li>${value.replace(/\n/g, "<br>")}</li>`;
                     for (let j = i + 1; j < data.length; j++) {
                         if (!data[j].c[0]) {
-                            console.log(`➕ Adding Key Feature: ${data[j].c[1].v}`);
-                            features += `<li>${data[j].c[1].v}</li>`;
+                            console.log(`➕ Adding Feature: ${data[j].c[1].v}`);
+                            features += `<li>${data[j].c[1].v.replace(/\n/g, "<br>")}</li>`;
                         } else {
                             break;
                         }
@@ -114,11 +115,11 @@ function renderFactsheet(data) {
 
                 case "Ideal For":
                     console.log(`📌 Processing "Ideal For"`);
-                    idealFor = `<ul>`;
+                    idealFor = `<ul><li>${value.replace(/\n/g, "<br>")}</li>`;
                     for (let j = i + 1; j < data.length; j++) {
                         if (!data[j].c[0]) {
                             console.log(`➕ Adding Ideal For: ${data[j].c[1].v}`);
-                            idealFor += `<li>${data[j].c[1].v}</li>`;
+                            idealFor += `<li>${data[j].c[1].v.replace(/\n/g, "<br>")}</li>`;
                         } else {
                             break;
                         }
@@ -129,16 +130,16 @@ function renderFactsheet(data) {
                 case "Unit Cost":
                 case "Unit Price":
                     console.log(`📌 Setting Pricing Info: ${field} - ${value}`);
-                    pricing = `<strong>${field}:</strong> ${value}`;
+                    pricing += `<strong>${field}:</strong> ${value.replace(/\n/g, "<br>")}<br>`;
                     break;
 
                 case "What is Excluded":
                     console.log(`📌 Processing "What is Excluded"`);
-                    exclusions = `<ul><li>${value}</li>`;
+                    exclusions = `<ul><li>${value.replace(/\n/g, "<br>")}</li>`;
                     for (let j = i + 1; j < data.length; j++) {
                         if (!data[j].c[0]) {
                             console.log(`➕ Adding Exclusion: ${data[j].c[1].v}`);
-                            exclusions += `<li>${data[j].c[1].v}</li>`;
+                            exclusions += `<li>${data[j].c[1].v.replace(/\n/g, "<br>")}</li>`;
                         } else {
                             break;
                         }
@@ -148,11 +149,11 @@ function renderFactsheet(data) {
 
                 case "Pros":
                     console.log(`📌 Processing "Pros"`);
-                    pros = `<ul><li>${value}</li>`;
+                    pros = `<ul><li>${value.replace(/\n/g, "<br>")}</li>`;
                     for (let j = i + 1; j < data.length; j++) {
                         if (!data[j].c[0]) {
                             console.log(`➕ Adding Pro: ${data[j].c[1].v}`);
-                            pros += `<li>${data[j].c[1].v}</li>`;
+                            pros += `<li>${data[j].c[1].v.replace(/\n/g, "<br>")}</li>`;
                         } else {
                             break;
                         }
@@ -162,11 +163,11 @@ function renderFactsheet(data) {
 
                 case "Cons":
                     console.log(`📌 Processing "Cons"`);
-                    cons = `<ul><li>${value}</li>`;
+                    cons = `<ul><li>${value.replace(/\n/g, "<br>")}</li>`;
                     for (let j = i + 1; j < data.length; j++) {
                         if (!data[j].c[0]) {
                             console.log(`➕ Adding Con: ${data[j].c[1].v}`);
-                            cons += `<li>${data[j].c[1].v}</li>`;
+                            cons += `<li>${data[j].c[1].v.replace(/\n/g, "<br>")}</li>`;
                         } else {
                             break;
                         }
@@ -176,12 +177,12 @@ function renderFactsheet(data) {
 
                 case "Frequently Asked Questions":
                     console.log(`📌 Processing "FAQs"`);
-                    faq = `<ul><li>${value}</li></ul>`;
+                    faq = `<ul><li>${value.replace(/\n/g, "<br>")}</li></ul>`;
                     break;
 
                 case "Terms and Conditions":
                     console.log(`📌 Processing "Terms and Conditions"`);
-                    terms += `<p>${value}</p>`; // ✅ Ensures multi-line support
+                    terms = `<p class="product-terms">${value.replace(/\n/g, "<br>")}</p>`;
                     break;
 
                 default:
@@ -190,7 +191,7 @@ function renderFactsheet(data) {
             }
         }
 
-        // ✅ Ensure `html` is correctly built before rendering
+        // ✅ Final HTML Output
         html = `
             <div class="factsheet">
                 <div class="hero-section">
@@ -240,9 +241,6 @@ function renderFactsheet(data) {
 
         console.log("🚀 Final Generated HTML Output:", html);
         factsheetDiv.innerHTML = html;
-    } else {
-        console.error("❌ No valid data found.");
-        factsheetDiv.innerHTML = '<p>No data found in the Google Sheet.</p>';
     }
 }
 
