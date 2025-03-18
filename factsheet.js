@@ -50,10 +50,6 @@ function fetchSheetData(sheetName) {
         })
         .catch(error => console.error("❌ Error fetching data:", error));
 }
-
-// **Step 3: Render the Fetched Data into a Fact Sheet**
-
-// ✅ Ensure `fetchSheetData()` is called
 function renderFactsheet(data) {
     console.log("📌 Processing Data for Rendering:", data);
 
@@ -185,7 +181,7 @@ function renderFactsheet(data) {
 
                 case "Terms and Conditions":
                     console.log(`📌 Processing "Terms and Conditions"`);
-                    terms = `<p class="product-terms">${value || "Not provided"}</p>`;
+                    terms += `<p>${value}</p>`; // ✅ Ensures multi-line support
                     break;
 
                 default:
@@ -249,5 +245,9 @@ function renderFactsheet(data) {
         factsheetDiv.innerHTML = '<p>No data found in the Google Sheet.</p>';
     }
 }
+
+// **Step 3: Render the Fetched Data into a Fact Sheet**
+
+// ✅ Ensure `fetchSheetData()` is called
 
 fetchSheetData("Pay As You Go");
