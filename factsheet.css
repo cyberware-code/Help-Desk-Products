@@ -21,7 +21,7 @@
     height:auto;
     display:block;
     margin: 10px auto;
-    border-radius: 2px solid red; 
+    border: 2px solid red; 
 }
 
 /* Product Name and Tagline */
