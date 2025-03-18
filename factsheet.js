@@ -21,17 +21,28 @@ function fetchSheetData(sheetName) {
 
             // Find the correct Sheet ID (GID)
             const sheet = metadata.sheets.find(s => s.properties.title === sheetName);
+
             if (!sheet) throw new Error(`Error: Sheet '${sheetName}' not found.`);
 
-            const sheetGID = sheet.properties.sheetId;
-            console.log(`Sheet Hello'${sheetName}' found with GID: ${sheetGID}`);
+            
 
-            // **Step 2: Fetch Data from the Correct Sheet GID**
+            const sheetGID = sheet.properties.sheetId;
+
+            if (!sheetGID) {
+                throw new Error("❌ sheetGID is undefined! Data URL cannot be constructed.");
+            }
+
+            console.log(`Sheet Hello '${sheetName}' found with GID: ${sheetGID}`);
+            console.log(`**Step 2: Fetch Data from the Correct Sheet:' ${SHEET_ID}  `**');
+
+        
+            // **Step 2: Fetch Data from the Correct Sheet GID** //
+
             const dataUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&tq=&gid=${sheetGID}`;
 
-            console.log(`Fetching Data from URL: ${dataUrl}`);
-            console.log(`Fetching Data from URL: ${dataUrl}`);
-            console.log(`Fetching Data from URL: ${dataUrl}`);
+            console.log(`Data from URL: ${dataUrl}`);
+            console.log(`Data from URL: ${dataUrl}`);
+            console.log(`Data from URL: ${dataUrl}`);
 
 
 
