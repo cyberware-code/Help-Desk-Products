@@ -57,14 +57,17 @@ function fetchSheetData(sheetName) {
 function renderFactsheet(data) {
     console.log("📌 Processing Data for Rendering:", data);
 
+    // ✅ Declare `html` properly
+    let html = "";
+    
+
     const factsheetDiv = document.getElementById('factsheet');
     if (!factsheetDiv) {
         console.error("❌ Error: #factsheet div not found in index.html");
         return;
     }
 
-    // ✅ Declare `html` properly
-    let html = "";
+    
     let heroImage = '', productName = '', tagline = '', description = '', features = '', idealFor = '', pricing = '', exclusions = '', pros = '', cons = '', faq = '', terms = '';
 
     if (data && data.length > 0) {
@@ -210,7 +213,7 @@ function renderFactsheet(data) {
                     break;
                 }
             }
-        let html="";
+        
 
         // ✅ Ensure `html` is correctly built before rendering
         html += `
