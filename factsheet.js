@@ -1,4 +1,4 @@
-const FACTSHEET_VERSION = "1.3.1"; // Increment version
+const FACTSHEET_VERSION = "1.3.2"; // Updated version
 console.log(`🚀 FACTSHEET SCRIPT VERSION: ${FACTSHEET_VERSION}`);
 
 function fetchSheetData(sheetName) {
@@ -58,8 +58,9 @@ function renderFactsheet(data) {
     console.log(`📌 Processing Data for Rendering (Version: ${FACTSHEET_VERSION})`, data);
 
     let html = "";
-    let heroImage = '', productName = '', tagline = '', description = '', terms = '';
+    let heroImage = '', productName = '', tagline = '', description = '', terms = '', pricing = "";
     let sections = {}; // Store dynamically recognized sections
+    let pros = [], cons = []; // Store Pros & Cons separately for inline display
 
     const factsheetDiv = document.getElementById('factsheet');
     if (!factsheetDiv) {
@@ -70,8 +71,7 @@ function renderFactsheet(data) {
     let currentSection = null;
     let multiLineSections = new Set([
         "What it Covers", "Ideal For", "What is Excluded",
-        "Pros", "Cons", "Frequently Asked Questions",
-        "Terms and Conditions"
+        "Frequently Asked Questions", "Terms and Conditions"
     ]);
 
     if (data && data.length > 0) {
@@ -85,6 +85,10 @@ function renderFactsheet(data) {
                     if (!sections[currentSection]) sections[currentSection] = []; // ✅ Ensure array exists
                     console.log(`➕ Appending to "${currentSection}":`, value);
                     sections[currentSection].push(value.replace(/\n/g, "<br>"));
+                } else if (currentSection === "Pros") {
+                    pros.push(value);
+                } else if (currentSection === "Cons") {
+                    cons.push(value);
                 } else {
                     console.warn(`⚠️ Skipping row ${i} because it has no header.`);
                 }
@@ -116,9 +120,25 @@ function renderFactsheet(data) {
                     description = `<p class="product-description">${value.replace(/\n/g, "<br>")}</p>`;
                     break;
 
+                case "Unit Cost":
+                case "Unit Price":
+                    console.log(`📌 Setting Pricing Info: ${field} - ${value}`);
+                    pricing += `<tr><td class="label">${field}:</td><td class="value">${value}</td></tr>`;
+                    break;
+
                 case "Terms and Conditions":
                     console.log(`📌 Processing "Terms and Conditions"`);
                     terms = `<p class="product-terms">${value.replace(/\n/g, "<br>")}</p>`;
+                    break;
+
+                case "Pros":
+                    console.log(`📌 Processing Pros`);
+                    pros.push(value);
+                    break;
+
+                case "Cons":
+                    console.log(`📌 Processing Cons`);
+                    cons.push(value);
                     break;
 
                 default:
@@ -160,19 +180,21 @@ function renderFactsheet(data) {
 
                     ${sectionsHtml}
 
+                    <tr><td colspan="2" class="section-title">Pricing</td></tr>
+                    ${pricing}
+
+                    <tr><td class="label">Pros:</td><td class="value">${pros.join(", ")}</td></tr>
+                    <tr><td class="label">Cons:</td><td class="value">${cons.join(", ")}</td></tr>
+
                     <tr><td colspan="2" class="section-title footer">🔗 Terms & Conditions | Contact Info</td></tr>
                     <tr><td colspan="2">${terms}</td></tr>
                 </table>
             </div>
         `;
 
-        console.log("🚀 Final Generated HTML Output (Version: " + FACTSHEET_VERSION + "):", html);
+        console.log("🚀 Final Generated HTML Output:", html);
         factsheetDiv.innerHTML = html;
-    } else {
-        console.error("❌ No valid data found.");
-        factsheetDiv.innerHTML = '<p>No data found in the Google Sheet.</p>';
     }
 }
 
-// **Step 3: Render the Fetched Data into a Fact Sheet**
 fetchSheetData("Pay As You Go");
