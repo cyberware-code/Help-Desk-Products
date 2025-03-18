@@ -1,4 +1,4 @@
-const FACTSHEET_VERSION = "1.0.0"; // Increment this with each update
+const FACTSHEET_VERSION = "1.1.0"; // Increment when changes are made
 
 console.log(`🚀 FACTSHEET SCRIPT VERSION: ${FACTSHEET_VERSION}`);
 
@@ -10,8 +10,8 @@ function fetchSheetData(sheetName) {
 
     console.log("📢 Fetching data for sheet:", sheetName);
 
-    const SHEET_ID = '19U1S1RD2S0dY_zKgE2CPmTp-5O4VUSfXCCC0qLg0oq0'; // Google Spreadsheet ID
-    const API_KEY = 'AIzaSyBm8quffA_U1BTUnbBxXeLKuHYyEzLFX7E'; // API Key
+    const SHEET_ID = '19U1S1RD2S0dY_zKgE2CPmTp-5O4VUSfXCCC0qLg0oq0';
+    const API_KEY = 'AIzaSyBm8quffA_U1BTUnbBxXeLKuHYyEzLFX7E';
 
     const metadataUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}?key=${API_KEY}`;
 
