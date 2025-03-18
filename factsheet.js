@@ -28,11 +28,19 @@ function fetchSheetData(sheetName) {
 
             // **Step 2: Fetch Data from the Correct Sheet GID**
             const dataUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&tq=&gid=${sheetGID}`;
-            console.log(`📡 Fetching Data from URL: ${dataUrl}`);
+
+            console.log(`Fetching Data from URL: ${dataUrl}`);
+            console.log(`Fetching Data from URL: ${dataUrl}`);
+            console.log(`Fetching Data from URL: ${dataUrl}`);
+
+
 
             if (!dataUrl) {
                 throw new Error("❌ dataUrl is undefined! Fetch cannot proceed.");
             }
+
+            console.log(`promise done Data from URL: ${dataUrl}`);
+
             return fetch(dataUrl);
         })
         .then(response => response.text())
