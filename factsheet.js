@@ -33,7 +33,7 @@ function fetchSheetData(sheetName) {
             }
 
             console.log(`Sheet Hello '${sheetName}' found with GID: ${sheetGID}`);
-            console.log(`**Step 2: Fetch Data from the Correct Sheet:' ${SHEET_ID}  `**');
+            console.log(`**Step 2: Fetch Data from the Correct Sheet:** ${SHEET_ID}`);
 
         
             // **Step 2: Fetch Data from the Correct Sheet GID** //
