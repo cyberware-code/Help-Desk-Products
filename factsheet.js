@@ -64,6 +64,8 @@ function fetchSheetData(sheetName) {
             })
             .catch(error => console.error("Error fetching data:", error));
         
+            console.log("📥 Calling renderFactsheet() with data:", formattedData);
+            console.log("📥 Data Length:", formattedData.length);
             renderFactsheet(formattedData);
         })
         .catch(error => console.error("Error fetching data:", error));
