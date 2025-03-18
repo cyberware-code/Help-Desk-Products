@@ -122,6 +122,8 @@ function renderFactsheet(data) {
                     break;
             }
         }
+        
+        console.log("🚀 Final Generated HTML Output:", html);
 
         factsheetDiv.innerHTML = `
             <div class="factsheet">
