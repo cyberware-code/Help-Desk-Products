@@ -1,4 +1,4 @@
-const FACTSHEET_VERSION = "1.2.0"; // Increment when changes are made
+const FACTSHEET_VERSION = "1.3.0"; // Increment version
 console.log(`🚀 FACTSHEET SCRIPT VERSION: ${FACTSHEET_VERSION}`);
 
 function fetchSheetData(sheetName) {
@@ -58,7 +58,8 @@ function renderFactsheet(data) {
     console.log(`📌 Processing Data for Rendering (Version: ${FACTSHEET_VERSION})`, data);
 
     let html = "";
-    let heroImage = '', productName = '', tagline = '', description = '', features = '', idealFor = '', pricing = '', exclusions = '', pros = '', cons = '', faq = '', terms = '';
+    let heroImage = '', productName = '', tagline = '', description = '', terms = '';
+    let sections = {}; // Store dynamically recognized sections
 
     const factsheetDiv = document.getElementById('factsheet');
     if (!factsheetDiv) {
@@ -67,15 +68,11 @@ function renderFactsheet(data) {
     }
 
     let currentSection = null;
-    let multiLineSections = {
-        "What it Covers": [],
-        "Ideal For": [],
-        "What is Excluded": [],
-        "Pros": [],
-        "Cons": [],
-        "Frequently Asked Questions": [],
-        "Terms and Conditions": []
-    };
+    let multiLineSections = new Set([
+        "What it Covers", "Ideal For", "What is Excluded",
+        "Pros", "Cons", "Frequently Asked Questions",
+        "Terms and Conditions"
+    ]);
 
     if (data && data.length > 0) {
         for (let i = 0; i < data.length; i++) {
@@ -84,9 +81,9 @@ function renderFactsheet(data) {
             let value = row[1] && row[1].v ? row[1].v.trim() : "";
 
             if (!field.trim() && value) {
-                if (currentSection && multiLineSections[currentSection]) {
-                    console.log(`➕ Appending multi-line data to "${currentSection}":`, value);
-                    multiLineSections[currentSection].push(value.replace(/\n/g, "<br>"));
+                if (currentSection && multiLineSections.has(currentSection)) {
+                    console.log(`➕ Appending to "${currentSection}":`, value);
+                    sections[currentSection].push(value.replace(/\n/g, "<br>"));
                 } else {
                     console.warn(`⚠️ Skipping row ${i} because it has no header.`);
                 }
@@ -118,27 +115,31 @@ function renderFactsheet(data) {
                     description = `<p class="product-description">${value.replace(/\n/g, "<br>")}</p>`;
                     break;
 
-                case "Unit Cost":
-                case "Unit Price":
-                    console.log(`📌 Setting Pricing Info: ${field} - ${value}`);
-                    pricing += `<strong>${field}:</strong> ${value.replace(/\n/g, "<br>")}<br>`;
-                    break;
-
                 case "Terms and Conditions":
                     console.log(`📌 Processing "Terms and Conditions"`);
                     terms = `<p class="product-terms">${value.replace(/\n/g, "<br>")}</p>`;
                     break;
 
                 default:
-                    if (multiLineSections[field] !== undefined) {
+                    if (multiLineSections.has(field)) {
                         console.log(`📌 Processing Multi-line Section: "${field}"`);
-                        multiLineSections[field].push(value.replace(/\n/g, "<br>"));
+                        sections[field] = [value.replace(/\n/g, "<br>")];
                     } else {
                         console.warn(`⚠️ Unrecognized Field: '${field}' with Value: '${value}'`);
                     }
                     break;
             }
         }
+
+        // Generate HTML dynamically for all sections
+        let sectionsHtml = "";
+        Object.keys(sections).forEach(section => {
+            sectionsHtml += `
+                <tr><td colspan="2" class="section-title">${section}</td></tr>
+                <tr><td colspan="2"><ul class="section-list">
+                    ${sections[section].map(item => `<li>${item}</li>`).join("")}
+                </ul></td></tr>`;
+        });
 
         html = `
             <div class="factsheet">
@@ -153,6 +154,8 @@ function renderFactsheet(data) {
                 <table class="product-table">
                     <tr><td colspan="2" class="section-title">Description</td></tr>
                     <tr><td colspan="2">${description}</td></tr>
+
+                    ${sectionsHtml}
 
                     <tr><td colspan="2" class="section-title footer">🔗 Terms & Conditions | Contact Info</td></tr>
                     <tr><td colspan="2">${terms}</td></tr>
