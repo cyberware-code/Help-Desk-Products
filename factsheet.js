@@ -1,3 +1,7 @@
+const FACTSHEET_VERSION = "1.0.0"; // Increment this with each update
+
+console.log(`🚀 FACTSHEET SCRIPT VERSION: ${FACTSHEET_VERSION}`);
+
 function fetchSheetData(sheetName) {
     if (!sheetName) {
         console.error("❌ Error: No valid sheet name provided.");
@@ -50,10 +54,10 @@ function fetchSheetData(sheetName) {
         })
         .catch(error => console.error("❌ Error fetching data:", error));
 }
-function renderFactsheet(data) {
-    console.log("📌 Processing Data for Rendering:", data);
 
-    // ✅ Declare `html` properly
+function renderFactsheet(data) {
+    console.log(`📌 Processing Data for Rendering (Version: ${FACTSHEET_VERSION})`, data);
+
     let html = "";
     let heroImage = '', productName = '', tagline = '', description = '', features = '', idealFor = '', pricing = '', exclusions = '', pros = '', cons = '', faq = '', terms = '';
 
@@ -99,87 +103,6 @@ function renderFactsheet(data) {
                     description = `<p class="product-description">${value.replace(/\n/g, "<br>")}</p>`;
                     break;
 
-                case "What it Covers":
-                    console.log(`📌 Processing "What it Covers"`);
-                    features = `<ul><li>${value.replace(/\n/g, "<br>")}</li>`;
-                    for (let j = i + 1; j < data.length; j++) {
-                        if (!data[j].c[0]) {
-                            console.log(`➕ Adding Feature: ${data[j].c[1].v}`);
-                            features += `<li>${data[j].c[1].v.replace(/\n/g, "<br>")}</li>`;
-                        } else {
-                            break;
-                        }
-                    }
-                    features += `</ul>`;
-                    break;
-
-                case "Ideal For":
-                    console.log(`📌 Processing "Ideal For"`);
-                    idealFor = `<ul><li>${value.replace(/\n/g, "<br>")}</li>`;
-                    for (let j = i + 1; j < data.length; j++) {
-                        if (!data[j].c[0]) {
-                            console.log(`➕ Adding Ideal For: ${data[j].c[1].v}`);
-                            idealFor += `<li>${data[j].c[1].v.replace(/\n/g, "<br>")}</li>`;
-                        } else {
-                            break;
-                        }
-                    }
-                    idealFor += `</ul>`;
-                    break;
-
-                case "Unit Cost":
-                case "Unit Price":
-                    console.log(`📌 Setting Pricing Info: ${field} - ${value}`);
-                    pricing += `<strong>${field}:</strong> ${value.replace(/\n/g, "<br>")}<br>`;
-                    break;
-
-                case "What is Excluded":
-                    console.log(`📌 Processing "What is Excluded"`);
-                    exclusions = `<ul><li>${value.replace(/\n/g, "<br>")}</li>`;
-                    for (let j = i + 1; j < data.length; j++) {
-                        if (!data[j].c[0]) {
-                            console.log(`➕ Adding Exclusion: ${data[j].c[1].v}`);
-                            exclusions += `<li>${data[j].c[1].v.replace(/\n/g, "<br>")}</li>`;
-                        } else {
-                            break;
-                        }
-                    }
-                    exclusions += `</ul>`;
-                    break;
-
-                case "Pros":
-                    console.log(`📌 Processing "Pros"`);
-                    pros = `<ul><li>${value.replace(/\n/g, "<br>")}</li>`;
-                    for (let j = i + 1; j < data.length; j++) {
-                        if (!data[j].c[0]) {
-                            console.log(`➕ Adding Pro: ${data[j].c[1].v}`);
-                            pros += `<li>${data[j].c[1].v.replace(/\n/g, "<br>")}</li>`;
-                        } else {
-                            break;
-                        }
-                    }
-                    pros += `</ul>`;
-                    break;
-
-                case "Cons":
-                    console.log(`📌 Processing "Cons"`);
-                    cons = `<ul><li>${value.replace(/\n/g, "<br>")}</li>`;
-                    for (let j = i + 1; j < data.length; j++) {
-                        if (!data[j].c[0]) {
-                            console.log(`➕ Adding Con: ${data[j].c[1].v}`);
-                            cons += `<li>${data[j].c[1].v.replace(/\n/g, "<br>")}</li>`;
-                        } else {
-                            break;
-                        }
-                    }
-                    cons += `</ul>`;
-                    break;
-
-                case "Frequently Asked Questions":
-                    console.log(`📌 Processing "FAQs"`);
-                    faq = `<ul><li>${value.replace(/\n/g, "<br>")}</li></ul>`;
-                    break;
-
                 case "Terms and Conditions":
                     console.log(`📌 Processing "Terms and Conditions"`);
                     terms = `<p class="product-terms">${value.replace(/\n/g, "<br>")}</p>`;
@@ -191,7 +114,6 @@ function renderFactsheet(data) {
             }
         }
 
-        // ✅ Final HTML Output
         html = `
             <div class="factsheet">
                 <div class="hero-section">
@@ -206,46 +128,19 @@ function renderFactsheet(data) {
                     <tr><td colspan="2" class="section-title">Description</td></tr>
                     <tr><td colspan="2">${description}</td></tr>
 
-                    <tr>
-                        <td class="section-title">✅ Key Features</td>
-                        <td class="section-title">📌 Ideal For</td>
-                    </tr>
-                    <tr>
-                        <td>${features}</td>
-                        <td>${idealFor}</td>
-                    </tr>
-
-                    <tr><td colspan="2" class="section-title">💲 Pricing</td></tr>
-                    <tr><td colspan="2">${pricing}</td></tr>
-
-                    <tr><td colspan="2" class="section-title">❌ What is Excluded</td></tr>
-                    <tr><td colspan="2">${exclusions}</td></tr>
-
-                    <tr>
-                        <td class="section-title">✅ Pros</td>
-                        <td class="section-title">❌ Cons</td>
-                    </tr>
-                    <tr>
-                        <td>${pros}</td>
-                        <td>${cons}</td>
-                    </tr>
-
-                    <tr><td colspan="2" class="section-title">❓ FAQs</td></tr>
-                    <tr><td colspan="2">${faq}</td></tr>
-
                     <tr><td colspan="2" class="section-title footer">🔗 Terms & Conditions | Contact Info</td></tr>
                     <tr><td colspan="2">${terms}</td></tr>
                 </table>
             </div>
         `;
 
-        console.log("🚀 Final Generated HTML Output:", html);
+        console.log("🚀 Final Generated HTML Output (Version: " + FACTSHEET_VERSION + "):", html);
         factsheetDiv.innerHTML = html;
+    } else {
+        console.error("❌ No valid data found.");
+        factsheetDiv.innerHTML = '<p>No data found in the Google Sheet.</p>';
     }
 }
 
 // **Step 3: Render the Fetched Data into a Fact Sheet**
-
-// ✅ Ensure `fetchSheetData()` is called
-
 fetchSheetData("Pay As You Go");
