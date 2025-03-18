@@ -1,4 +1,4 @@
-const FACTSHEET_VERSION = "1.3.0"; // Increment version
+const FACTSHEET_VERSION = "1.3.1"; // Increment version
 console.log(`🚀 FACTSHEET SCRIPT VERSION: ${FACTSHEET_VERSION}`);
 
 function fetchSheetData(sheetName) {
@@ -82,6 +82,7 @@ function renderFactsheet(data) {
 
             if (!field.trim() && value) {
                 if (currentSection && multiLineSections.has(currentSection)) {
+                    if (!sections[currentSection]) sections[currentSection] = []; // ✅ Ensure array exists
                     console.log(`➕ Appending to "${currentSection}":`, value);
                     sections[currentSection].push(value.replace(/\n/g, "<br>"));
                 } else {
@@ -123,7 +124,7 @@ function renderFactsheet(data) {
                 default:
                     if (multiLineSections.has(field)) {
                         console.log(`📌 Processing Multi-line Section: "${field}"`);
-                        sections[field] = [value.replace(/\n/g, "<br>")];
+                        sections[field] = [value.replace(/\n/g, "<br>")]; // ✅ Ensure array initialization
                     } else {
                         console.warn(`⚠️ Unrecognized Field: '${field}' with Value: '${value}'`);
                     }
@@ -134,11 +135,13 @@ function renderFactsheet(data) {
         // Generate HTML dynamically for all sections
         let sectionsHtml = "";
         Object.keys(sections).forEach(section => {
-            sectionsHtml += `
-                <tr><td colspan="2" class="section-title">${section}</td></tr>
-                <tr><td colspan="2"><ul class="section-list">
-                    ${sections[section].map(item => `<li>${item}</li>`).join("")}
-                </ul></td></tr>`;
+            if (sections[section] && sections[section].length > 0) {
+                sectionsHtml += `
+                    <tr><td colspan="2" class="section-title">${section}</td></tr>
+                    <tr><td colspan="2"><ul class="section-list">
+                        ${sections[section].map(item => `<li>${item}</li>`).join("")}
+                    </ul></td></tr>`;
+            }
         });
 
         html = `
