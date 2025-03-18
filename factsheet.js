@@ -88,72 +88,141 @@ function renderFactsheet(data) {
 
             switch (field) {
                 case "Image URL":
-                    console.log(`✔️ Setting Hero Image: ${value}`);
-                    let imageUrl = value.trim(); // Remove any unwanted whitespace or newline characters
-                    heroImage = `<img src="${imageUrl}" class="hero-image" alt="Product Image" onerror="this.onerror=null; this.src='fallback.jpg';">`;
+                    console.log("✔️ Setting Hero Image:", value); // Debug log
+                    let imageUrl = value ? value.trim() : ""; // Ensure valid URL
+       
+                    // Ensure fallback image is used if the original fails
+                    heroImage = `<img src="${imageUrl}" class="hero-image" alt="Product Image" 
+                          onerror="this.onerror=null; this.src='https://via.placeholder.com/600x400?text=No+Image+Available';">`;
                     break;
+                    
+            
                 case "Product Name":
-                    console.log(`✔️ Setting Product Name: ${value}`);
-                    productName = `<h1 class="product-title">${value}</h1>`;
+                    console.log(`📌 Setting Product Name: ${value}`);
+                    html += `<h1 class="product-title">${value}</h1>`;
                     break;
+            
                 case "Tagline":
-                    console.log(`✔️ Setting Tagline: ${value}`);
-                    tagline = `<h3 class="product-tagline">${value}</h3>`;
+                    console.log(`📌 Setting Tagline: ${value}`);
+                    html += `<h3 class="product-tagline">${value}</h3>`;
                     break;
+            
                 case "Description":
-                    console.log(`✔️ Setting Description: ${value}`);
-                    description = `<p class="product-description">${value}</p>`;
+                    console.log(`📌 Setting Description: ${value}`);
+                    html += `<tr><td colspan="2" class="section-title">Description</td></tr>
+                             <tr><td colspan="2"><p class="product-description">${value}</p></td></tr>`;
                     break;
-                case "Key Features":
-                    console.log(`✔️ Adding Key Feature: ${value}`);
-                    features += `<li>${value}</li>`;
+            
+                case "What it Covers":
+                    console.log(`📌 Processing "What it Covers"`);
+                    html += `<tr><td colspan="2" class="section-title">✅ Key Features</td></tr><tr><td colspan="2"><ul>`;
+                    for (let i = rowIndex + 1; i < data.length; i++) {
+                        if (!data[i].field) {
+                            console.log(`➕ Adding Key Feature: ${data[i].value}`);
+                            html += `<li>${data[i].value}</li>`; 
+                        } else {
+                            break; 
+                        }
+                    }
+                    html += `</ul></td></tr>`;
                     break;
+            
                 case "Ideal For":
-                    console.log(`✔️ Adding Ideal For: ${value}`);
-                    idealFor += `<li>${value}</li>`;
+                    console.log(`📌 Processing "Ideal For"`);
+                    html += `<tr><td colspan="2" class="section-title">📌 Ideal For</td></tr><tr><td colspan="2"><ul>`;
+                    let idealForList = "";
+                    for (let i = rowIndex + 1; i < data.length; i++) {
+                        if (!data[i].field) {
+                            console.log(`➕ Adding Ideal For: ${data[i].value}`);
+                            idealForList += `<li>${data[i].value}</li>`;
+                        } else {
+                            break;
+                        }
+                    }
+                    html += idealForList || "<li>Not specified</li>";
+                    html += `</ul></td></tr>`;
                     break;
-                case "Pricing":
-                    console.log(`✔️ Setting Pricing: ${value}`);
-                    pricing = `<p class="product-pricing">${value}</p>`;
+            
+                case "Unit Cost":
+                case "Unit Price":
+                    console.log(`📌 Setting Pricing Info: ${field} - ${value}`);
+                    html += `<tr><td colspan="2" class="section-title">💲 Pricing</td></tr>
+                             <tr><td colspan="2"><strong>${field}:</strong> ${value}</td></tr>`;
                     break;
+            
                 case "What is Excluded":
-                    console.log(`✔️ Adding Exclusion: ${value}`);
-                    exclusions += `<li>${value}</li>`;
+                    console.log(`📌 Processing "What is Excluded"`);
+                    html += `<tr><td colspan="2" class="section-title">❌ What is Excluded</td></tr><tr><td colspan="2"><ul>`;
+                    let exclusions = `<li>${value}</li>`;
+                    for (let i = rowIndex + 1; i < data.length; i++) {
+                        if (!data[i].field) {
+                            console.log(`➕ Adding Exclusion: ${data[i].value}`);
+                            exclusions += `<li>${data[i].value}</li>`;
+                        } else {
+                            break;
+                        }
+                    }
+                    html += exclusions;
+                    html += `</ul></td></tr>`;
                     break;
+            
                 case "Pros":
-                    console.log(`✔️ Adding Pro: ${value}`);
-                    pros += `<li>${value}</li>`;
+                    console.log(`📌 Processing "Pros"`);
+                    html += `<tr><td colspan="2" class="section-title">✅ Pros</td></tr><tr><td colspan="2"><ul><li>${value}</li>`;
+                    for (let i = rowIndex + 1; i < data.length; i++) {
+                        if (!data[i].field) {
+                            console.log(`➕ Adding Pro: ${data[i].value}`);
+                            html += `<li>${data[i].value}</li>`;
+                        } else {
+                            break;
+                        }
+                    }
+                    html += `</ul></td></tr>`;
                     break;
+            
                 case "Cons":
-                    console.log(`✔️ Adding Con: ${value}`);
-                    cons += `<li>${value}</li>`;
+                    console.log(`📌 Processing "Cons"`);
+                    html += `<tr><td colspan="2" class="section-title">❌ Cons</td></tr><tr><td colspan="2"><ul><li>${value}</li>`;
+                    for (let i = rowIndex + 1; i < data.length; i++) {
+                        if (!data[i].field) {
+                            console.log(`➕ Adding Con: ${data[i].value}`);
+                            html += `<li>${data[i].value}</li>`;
+                        } else {
+                            break;
+                        }
+                    }
+                    html += `</ul></td></tr>`;
                     break;
+            
                 case "Frequently Asked Questions":
-                    console.log(`✔️ Adding FAQ: ${value}`);
-                    faq += `<li>${value}</li>`;
+                    console.log(`📌 Processing "Frequently Asked Questions"`);
+                    html += `<tr><td colspan="2" class="section-title">❓ FAQs</td></tr><tr><td colspan="2"><ul><li>${value}</li></ul></td></tr>`;
                     break;
+            
                 case "Terms and Conditions":
-                    console.log(`✔️ Setting Terms & Conditions: ${value}`);
-                    terms = `<p class="product-terms">${value}</p>`;
+                    console.log(`📌 Processing "Terms and Conditions"`);
+                    html += `<tr><td colspan="2" class="section-title footer">🔗 Terms & Conditions | Contact Info</td></tr>
+                             <tr><td colspan="2"><p class="product-terms">${value || "Not provided"}</p></td></tr>`;
                     break;
+            
                 default:
                     console.warn(`⚠️ Unrecognized Field: '${field}' with Value: '${value}'`);
                     break;
+                }
             }
-        }
         let html="";
 
         // ✅ Ensure `html` is correctly built before rendering
-        html = `
+        html += `
             <div class="factsheet">
                 <div class="hero-section">
-                    ${heroImage ? heroImage : '<p>❌ No Image Available</p>'}
+                    ${heroImage}
                     <div class="title-container">
-                        ${productName}
-                        ${tagline}
+                        <h1 class="product-title">Pay-As-You-Go IT Support</h1>
+                        <h3 class="product-tagline">If you want to get ahead... Get a Hat. Making excellence a Rabbit.</h3>
                     </div>
                 </div>
-
+                
                 <table class="product-table">
                     <tr><td colspan="2" class="section-title">Description</td></tr>
                     <tr><td colspan="2">${description}</td></tr>
