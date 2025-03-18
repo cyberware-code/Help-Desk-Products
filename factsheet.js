@@ -1,4 +1,4 @@
-const FACTSHEET_VERSION = "1.3.4"; // Updated version
+const FACTSHEET_VERSION = "1.3.5"; // Updated version
 console.log(`🚀 FACTSHEET SCRIPT VERSION: ${FACTSHEET_VERSION}`);
 
 function fetchSheetData(sheetName) {
@@ -82,9 +82,21 @@ function renderFactsheet(data) {
             switch (field) {
                 case "Image URL":
                     console.log("✔️ Setting Hero Image:", value);
-                    let imageUrl = value.trim();
-                    heroImage = `<img src="${imageUrl}" class="hero-image" alt="Product Image" 
-                          onerror="this.onerror=null; this.src='https://via.placeholder.com/600x400?text=No+Image+Available';">`;
+
+                    // Step 1: Clean the URL
+                    let imageUrl = value.trim(); // Ensure no extra spaces or newlines
+                    console.log("🔗 Processed Image URL:", imageUrl);
+
+                    // Step 2: Find the hero image element in the DOM
+                    const heroImage = document.querySelector('.hero-image');
+
+                    if (heroImage) {
+                        heroImage.src = imageUrl; // Set the cleaned URL
+                        console.log("✅ Fixed Hero Image URL:", heroImage.src);
+                    } else {
+                        console.log("⚠️ Hero Image element not found! Ensure it exists in the HTML.");
+                    }
+
                     break;
 
                 case "Product Name":
