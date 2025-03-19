@@ -1,28 +1,49 @@
-// FACTSHEET SCRIPT VERSION: 2.1.1
-console.log("🚀 FACTSHEET SCRIPT VERSION: 2.1.1");
+// FACTSHEET SCRIPT VERSION: 2.1.2
+console.log("🚀 FACTSHEET SCRIPT VERSION: 2.1.2");
 
 function fetchSheetData(sheetName) {
-    // Ensure you have the correct Spreadsheet ID in the URL
-    const sheetURL = `https://docs.google.com/spreadsheets/d/19U1S1RD2S0dY_zKgE2CPmTp-5O4VUSfXCCC0qLg0oq0/gviz/tq?tqx=out:json&tq=&gid=1238020069`;
+    const sheetMetadataUrl = `https://spreadsheets.google.com/feeds/worksheets/YOUR_SPREADSHEET_ID/public/values?alt=json`;
 
-    // Log the URL for debugging
-    console.log("Fetching data from URL:", sheetURL);
+    console.log("📢 Fetching sheet metadata to get gid for:", sheetName);
 
-    fetch(sheetURL)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+    fetch(sheetMetadataUrl)
+        .then(response => response.json())
+        .then(metadata => {
+            // Find the sheet with the matching name
+            const sheet = metadata.feed.entry.find(entry => entry.title.$t === sheetName);
+            
+            if (!sheet) {
+                console.error(`❌ Error: Sheet named '${sheetName}' not found in the metadata.`);
+                return;
             }
-            return response.json();
-        })
-        .then(data => {
-            console.log("📊 Data Retrieved:", data);
-            renderFactsheet(data.table.rows); // Pass the rows to the render function
+
+            const gid = sheet.id.$t.match(/gid=(\d+)/)[1]; // Extract gid from the URL
+
+            console.log(`📊 Found gid ${gid} for sheet '${sheetName}'. Fetching data...`);
+
+            // Now fetch the actual sheet data using the gid
+            const dataUrl = `https://docs.google.com/spreadsheets/d/YOUR_SPREADSHEET_ID/gviz/tq?tqx=out:json&tq=&gid=${gid}`;
+
+            fetch(dataUrl)
+                .then(response => response.text())
+                .then(data => {
+                    try {
+                        const jsonData = JSON.parse(data.substr(47).slice(0, -2)); // Extract JSON from Google Sheets response
+                        console.log("📊 Retrieved Data:", jsonData);
+                        renderFactsheet(jsonData.table.rows); // Pass rows to renderFactsheet
+                    } catch (error) {
+                        console.error("❌ Error parsing the sheet data:", error);
+                    }
+                })
+                .catch(error => {
+                    console.error("❌ Error fetching sheet data:", error);
+                });
         })
         .catch(error => {
-            console.error("❌ Error fetching sheet data:", error);
+            console.error("❌ Error fetching sheet metadata:", error);
         });
 }
+
 
 
 function renderFactsheet(data) {
