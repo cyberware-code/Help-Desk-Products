@@ -1,3 +1,6 @@
+// FACTSHEET SCRIPT VERSION: 2.0.0
+console.log("🚀 FACTSHEET SCRIPT VERSION: 2.0.0");
+
 function renderFactsheet(data) {
     console.log("📌 Processing Data for Rendering:", data);
 
