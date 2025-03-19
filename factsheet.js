@@ -1,5 +1,5 @@
-// FACTSHEET SCRIPT VERSION: 2.3.4
-console.log("🚀 FACTSHEET SCRIPT VERSION: 2.3.4");
+// FACTSHEET SCRIPT VERSION: 2.3.5
+console.log("🚀 FACTSHEET SCRIPT VERSION: 2.3.5");
 
 const SPREADSHEET_ID = "19U1S1RD2S0dY_zKgE2CPmTp-5O4VUSfXCCC0qLg0oq0"; 
 const API_KEY = "AIzaSyBm8quffA_U1BTUnbBxXeLKuHYyEzLFX7E"; 
@@ -100,12 +100,18 @@ function renderFactsheet(data) {
         html += '<div class="factsheet">';
 
         for (const field in sections) {
+
             if (field === "_Image URL") {
-                const imageUrl = sections[field].replace(/[\n\r]+$/, '');  // Remove trailing newline
+                let imageUrl = sections[field].trim();
+                console.log(`🖼️ Image URL Debug: ${imageUrl}`);
+            
+                // Convert Google Drive link to direct Googleusercontent format
+                imageUrl = imageUrl.replace("https://drive.google.com/uc?export=view&id=", "https://lh3.googleusercontent.com/d/");
+                
                 html += `
                     <div class="hero-section">
-                        <img src="${imageUrl}" class="hero-image" alt="Product Image" 
-                             onerror="this.onerror=null; this.src='https://via.placeholder.com/600x400?text=No+Image+Available';">
+                        <img src="${imageUrl}=w1024" class="hero-image" alt="Product Image"
+                             onerror="console.error('❌ Image failed to load:', this.src); this.onerror=null; this.src='https://via.placeholder.com/600x400?text=No+Image+Available';">
                     </div>`;
             } else if (field === "_Product Name") {
                 html += `<div class="title-container"><h1 class="product-title">${sections[field]}</h1></div>`;
