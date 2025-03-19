@@ -1,5 +1,5 @@
-// FACTSHEET SCRIPT VERSION: 2.3.1
-console.log("🚀 FACTSHEET SCRIPT VERSION: 2.3.1");
+// FACTSHEET SCRIPT VERSION: 2.3.2
+console.log("🚀 FACTSHEET SCRIPT VERSION: 2.3.2");
 
 const SPREADSHEET_ID = "19U1S1RD2S0dY_zKgE2CPmTp-5O4VUSfXCCC0qLg0oq0"; 
 const API_KEY = "AIzaSyBm8quffA_U1BTUnbBxXeLKuHYyEzLFX7E"; 
@@ -38,6 +38,7 @@ async function fetchSheetData(sheetName) {
         console.error("❌ Error fetching sheet data:", error);
     }
 }
+
 function renderFactsheet(data) {
     console.log("📌 Processing Data for Rendering:", data);
 
@@ -48,64 +49,79 @@ function renderFactsheet(data) {
         return;
     }
 
-    let currentSection = '';
-    let sectionContent = '';
-    let sectionHtml = '';
-    let sections = [];
+    // These variables will hold the dynamic content for the factsheet sections
+    let sections = {};
 
-    // Iterate over the data rows
-    data.forEach((row, index) => {
-        const field = row.c[0] && row.c[0].v ? row.c[0].v.trim() : ""; // A column (section header)
-        const value = row.c[1] && row.c[1].v ? row.c[1].v.trim() : ""; // B column (content)
+    // Iterate through all rows to process fields dynamically
+    if (data && data.length > 0) {
+        for (let i = 0; i < data.length; i++) {
+            const row = data[i].c || [];
+            const field = row[0] && row[0].v ? row[0].v.trim() : "";
+            const value = row[1] && row[1].v ? row[1].v.trim() : "";
 
-        // Skip empty rows or rows with no data
-        if (!field.trim() && !value.trim()) {
-            return;
+            if (!field.trim()) {
+                console.warn(`⚠️ Skipping row ${i} because it has no header.`);
+                continue;
+            }
+
+            console.log(`➡️ Processing Row ${i}: Field='${field}', Value='${value}'`);
+
+            // Handle multi-line content (bullet points and paragraphs)
+            let processedValue = '';
+            if (value) {
+                const lines = value.split('\n'); // Split value by lines
+                lines.forEach(line => {
+                    // If the line starts with '-', treat it as a bullet point
+                    if (line.startsWith('-')) {
+                        processedValue += `<li>${line.substring(1).trim()}</li>`;
+                    } else {
+                        processedValue += `<p>${line.trim()}</p>`;
+                    }
+                });
+            }
+
+            // Add the processed value under the appropriate section
+            if (sections[field]) {
+                sections[field] += processedValue;  // Append to existing field content
+            } else {
+                sections[field] = processedValue;  // Create a new field section
+            }
         }
 
-        // If we encounter a new section, push the previous section HTML to sections
-        if (field && currentSection && currentSection !== field) {
-            sections.push({ title: currentSection, content: sectionContent });
-            sectionContent = ''; // Reset the section content
+        // Start constructing the HTML output based on dynamic sections
+        html += '<div class="factsheet">';
+
+        // Process the sections dynamically, iterating over the keys (field names)
+        for (const field in sections) {
+            // Check for specific fields that require special treatment
+            if (field === "Image URL") {
+                const imageUrl = sections[field].replace(/[\n\r]+$/, '');  // Strip trailing newlines
+                html += `
+                    <div class="hero-section">
+                        <img src="${imageUrl}" class="hero-image" alt="Product Image" 
+                             onerror="this.onerror=null; this.src='https://via.placeholder.com/600x400?text=No+Image+Available';">
+                    </div>`;
+            } else if (field === "Product Name" || field === "Tagline" || field === "Description") {
+                html += `
+                    <div class="title-container">
+                        <h1 class="product-title">${sections[field]}</h1>
+                    </div>`;
+            } else {
+                // For all other fields, we add them as sections with titles
+                html += `
+                    <div class="section">
+                        <h2>${field}</h2>
+                        <div class="content">${sections[field]}</div>
+                    </div>`;
+            }
         }
 
-        // Process the field as section header
-        if (field) {
-            currentSection = field;
-        }
+        html += '</div>';  // Close the factsheet div
 
-        // Process the content of the section
-        if (value) {
-            // Split the content by lines, and treat each line as a paragraph unless it starts with '-'
-            const lines = value.split('\n').map(line => line.trim());
-
-            lines.forEach(line => {
-                if (line.startsWith('-')) {
-                    // Bullet point: add as a list item
-                    sectionContent += `<ul><li>${line.substring(1).trim()}</li></ul>`;
-                } else {
-                    // Regular paragraph: add as a paragraph
-                    sectionContent += `<p>${line}</p>`;
-                }
-            });
-        }
-    });
-
-    // Push the last section (if any)
-    if (currentSection && sectionContent) {
-        sections.push({ title: currentSection, content: sectionContent });
+        // Render the HTML into the factsheetDiv
+        factsheetDiv.innerHTML = html;
+    } else {
+        console.error("❌ No valid data found.");
+        factsheetDiv.innerHTML = '<p>No data found in the Google Sheet.</p>';
     }
-
-    // Generate the final HTML structure
-    sections.forEach(section => {
-        html += `
-            <div class="factsheet-section">
-                <h2 class="section-title">${section.title}</h2>
-                <div class="section-content">${section.content}</div>
-            </div>
-        `;
-    });
-
-    // Insert the final HTML into the factsheet container
-    factsheetDiv.innerHTML = html;
 }
