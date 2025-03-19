@@ -1,8 +1,9 @@
-// FACTSHEET SCRIPT VERSION: 2.3.3
-console.log("🚀 FACTSHEET SCRIPT VERSION: 2.3.3");
+// FACTSHEET SCRIPT VERSION: 2.3.4
+console.log("🚀 FACTSHEET SCRIPT VERSION: 2.3.4");
 
 const SPREADSHEET_ID = "19U1S1RD2S0dY_zKgE2CPmTp-5O4VUSfXCCC0qLg0oq0"; 
 const API_KEY = "AIzaSyBm8quffA_U1BTUnbBxXeLKuHYyEzLFX7E"; 
+
 
 async function fetchSheetData(sheetName) {
     console.log(`📢 Fetching sheet metadata to get gid for: ${sheetName}`);
@@ -38,6 +39,13 @@ async function fetchSheetData(sheetName) {
         console.error("❌ Error fetching sheet data:", error);
     }
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+    const sheetName = "Pay As You Go";
+    console.log(`Loading factsheet for: '${sheetName}'`);
+    fetchSheetData(sheetName);
+});
+
 function renderFactsheet(data) {
     console.log("📌 Processing Data for Rendering:", data);
 
@@ -48,57 +56,43 @@ function renderFactsheet(data) {
         return;
     }
 
-    // Object to store dynamically extracted sections
-    let sections = {};
+    let sections = {};  // Stores sections dynamically
+    let lastHeader = null; // Keeps track of the last section header
 
     if (data && data.length > 0) {
         for (let i = 0; i < data.length; i++) {
             const row = data[i].c || [];
             const field = row[0] && row[0].v ? row[0].v.trim() : "";
-            const value = row[1] && row[1].v ? row[1].v.trim() : "";
+            const values = row.slice(1).map(cell => cell && cell.v ? cell.v.trim() : "").filter(v => v !== "");
 
-            if (!field.trim()) {
-                console.warn(`⚠️ Skipping row ${i} because it has no header.`);
+            if (!field && values.length === 0) {
+                console.warn(`⚠️ Skipping empty row ${i}`);
                 continue;
             }
 
-            console.log(`➡️ Processing Row ${i}: Field='${field}', Value='${value}'`);
+            console.log(`➡️ Processing Row ${i}: Field='${field}', Values=${JSON.stringify(values)}`);
 
-            // Process multi-line content
-            let processedValue = '';
-            if (value) {
-                const lines = value.split('\n'); // Split value by lines
-                let listOpen = false;
-
-                lines.forEach((line, index) => {
-                    line = line.trim();
-                    if (!line) return; // Skip empty lines
-
-                    if (line.startsWith('-')) {
-                        if (!listOpen) {
-                            processedValue += "<ul>"; // Open list if it's the first bullet
-                            listOpen = true;
-                        }
-                        processedValue += `<li>${line.substring(1).trim()}</li>`; // Remove the "-" and trim space
-                    } else {
-                        if (listOpen) {
-                            processedValue += "</ul>"; // Close the list when normal text appears
-                            listOpen = false;
-                        }
-                        processedValue += `<p>${line}</p>`;
-                    }
-                });
-
-                if (listOpen) {
-                    processedValue += "</ul>"; // Ensure lists are properly closed
-                }
+            if (field.startsWith("_")) {
+                // Meta-data field (e.g., "_Image URL")
+                sections[field] = values[0] || ""; // Store the first value
+                continue;
             }
 
-            // Append processed value to the corresponding section
-            if (sections[field]) {
-                sections[field] += processedValue;  // Append if field already exists
-            } else {
-                sections[field] = processedValue;  // Create new entry
+            if (field) {
+                // New Section Header
+                lastHeader = field;
+                sections[field] = []; // Initialize empty array for multi-line storage
+            }
+
+            if (values.length > 0 && lastHeader) {
+                // Append content to the last section
+                values.forEach(value => {
+                    if (value.startsWith("-")) {
+                        sections[lastHeader].push(`<li>${value.substring(1).trim()}</li>`);
+                    } else {
+                        sections[lastHeader].push(`<p>${value}</p>`);
+                    }
+                });
             }
         }
 
@@ -106,24 +100,29 @@ function renderFactsheet(data) {
         html += '<div class="factsheet">';
 
         for (const field in sections) {
-            if (field === "Image URL") {
+            if (field === "_Image URL") {
                 const imageUrl = sections[field].replace(/[\n\r]+$/, '');  // Remove trailing newline
                 html += `
                     <div class="hero-section">
                         <img src="${imageUrl}" class="hero-image" alt="Product Image" 
                              onerror="this.onerror=null; this.src='https://via.placeholder.com/600x400?text=No+Image+Available';">
                     </div>`;
-            } else if (field === "Product Name" || field === "Tagline" || field === "Description") {
-                html += `
-                    <div class="title-container">
-                        <h1 class="product-title">${sections[field]}</h1>
-                    </div>`;
+            } else if (field === "_Product Name") {
+                html += `<div class="title-container"><h1 class="product-title">${sections[field]}</h1></div>`;
+            } else if (field.startsWith("_")) {
+                // Other meta-data fields (ignored for now but can be used)
+                console.log(`ℹ️ Meta-data field '${field}' found: ${sections[field]}`);
             } else {
-                // General case for all other fields
+                // General Section
+                let content = sections[field].join(""); // Join all stored HTML content
+                if (content.includes("<li>")) {
+                    content = `<ul>${content}</ul>`; // Wrap in UL if it contains bullet points
+                }
+
                 html += `
                     <div class="section">
                         <h2>${field}</h2>
-                        <div class="content">${sections[field]}</div>
+                        <div class="content">${content}</div>
                     </div>`;
             }
         }
