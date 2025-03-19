@@ -1,34 +1,21 @@
 // FACTSHEET SCRIPT VERSION: 2.1.0
-console.log("🚀 FACTSHEET SCRIPT VERSION: 2.1.0 LOADED");
+console.log("🚀 FACTSHEET SCRIPT VERSION: 2.1.0");
 
-// Function to fetch data from Google Sheets
-function fetchSheetData(sheetId, gid, callback) {
-    const sheetUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&tq=&gid=${gid}`;
-    console.log("📢 Fetching data from:", sheetUrl);
+function fetchSheetData(sheetName) {
+    // Define your Google Sheets URL here
+    const sheetURL = `https://docs.google.com/spreadsheets/d/your_spreadsheet_id/gviz/tq?tqx=out:json&tq=&gid=${sheetName}`;
 
-    fetch(sheetUrl)
-        .then(response => response.text())
-        .then(text => {
-            const match = text.match(/google.visualization.Query.setResponse\(([\s\S]*)\);/);
-            if (!match || match.length < 2) {
-                throw new Error("Invalid response format from Google Sheets.");
-            }
-
-            const jsonData = JSON.parse(match[1]);
-
-            if (!jsonData.table || !jsonData.table.rows) {
-                throw new Error("No table data found in the response.");
-            }
-
-            console.log("📥 Successfully retrieved", jsonData.table.rows.length, "rows from Google Sheets.");
-            callback(jsonData.table.rows);
+    fetch(sheetURL)
+        .then(response => response.json())
+        .then(data => {
+            console.log("📊 Data Retrieved:", data);
+            renderFactsheet(data.table.rows); // Pass the rows to the render function
         })
         .catch(error => {
             console.error("❌ Error fetching sheet data:", error);
         });
 }
 
-// Function to render the factsheet
 function renderFactsheet(data) {
     console.log("📌 Processing Data for Rendering:", data);
 
@@ -110,4 +97,70 @@ function renderFactsheet(data) {
                     break;
 
                 default:
-                    console.warn(`⚠️ Unrecognized Field: '${field}' with Value: 
+                    console.warn(`⚠️ Unrecognized Field: '${field}' with Value: '${value}'`);
+                    break;
+            }
+        }
+
+        html = `
+            <div class="factsheet">
+                <div class="hero-section">
+                    ${heroImage}
+                    <div class="title-container">
+                        ${productName}
+                        ${tagline}
+                    </div>
+                </div>
+
+                <table class="product-table">
+                    <tr><td colspan="2" class="section-title">Description</td></tr>
+                    <tr><td colspan="2">${description}</td></tr>
+
+                    <tr>
+                        <td class="section-title">✅ Key Features</td>
+                        <td class="section-title">📌 Ideal For</td>
+                    </tr>
+                    <tr>
+                        <td><ul>${features}</ul></td>
+                        <td><ul>${idealFor}</ul></td>
+                    </tr>
+
+                    <tr><td colspan="2" class="section-title">💲 Pricing</td></tr>
+                    <tr><td colspan="2">${pricing}</td></tr>
+
+                    <tr><td colspan="2" class="section-title">❌ What is Excluded</td></tr>
+                    <tr><td colspan="2"><ul>${exclusions}</ul></td></tr>
+
+                    <tr>
+                        <td class="section-title">✅ Pros</td>
+                        <td class="section-title">❌ Cons</td>
+                    </tr>
+                    <tr>
+                        <td><ul>${pros}</ul></td>
+                        <td><ul>${cons}</ul></td>
+                    </tr>
+
+                    <tr><td colspan="2" class="section-title">❓ FAQs</td></tr>
+                    <tr><td colspan="2"><ul>${faq}</ul></td></tr>
+
+                    <tr><td colspan="2" class="section-title footer">🔗 Terms & Conditions | Contact Info</td></tr>
+                    <tr><td colspan="2">${terms}</td></tr>
+                </table>
+            </div>
+        `;
+
+        console.log("🚀 Final Generated HTML Output:", html);
+
+        if (!html.trim()) {
+            console.error("❌ HTML content is empty before rendering!");
+        } else {
+            factsheetDiv.innerHTML = html;
+        }
+    } else {
+        console.error("❌ No valid data found.");
+        factsheetDiv.innerHTML = '<p>No data found in the Google Sheet.</p>';
+    }
+}
+
+// Example call to fetch the factsheet data
+fetchSheetData('Pay As You Go');
