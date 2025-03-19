@@ -1,5 +1,5 @@
-// FACTSHEET SCRIPT VERSION: 2.2.2
-console.log("🚀 FACTSHEET SCRIPT VERSION: 2.2.2");
+// FACTSHEET SCRIPT VERSION: 2.2.3
+console.log("🚀 FACTSHEET SCRIPT VERSION: 2.2.3");
 
 const SPREADSHEET_ID = "19U1S1RD2S0dY_zKgE2CPmTp-5O4VUSfXCCC0qLg0oq0"; 
 const API_KEY = "AIzaSyBm8quffA_U1BTUnbBxXeLKuHYyEzLFX7E"; 
@@ -51,8 +51,10 @@ function renderFactsheet(data) {
     let heroImage = '', productName = '', tagline = '', description = '', 
         features = '', idealFor = '', pricing = '', exclusions = '', 
         pros = '', cons = '', faq = '', terms = '';
-    
-    let lastField = ''; // Track the last field (for continuation like "What is Included")
+
+    let lastField = ''; // Track the last field for continuation
+    let currentList = ''; // Used to track multi-line items
+    let skipRow = false; // Flag to skip rows without content
 
     if (data && data.length > 0) {
         for (let i = 0; i < data.length; i++) {
@@ -60,6 +62,12 @@ function renderFactsheet(data) {
             const field = row[0] && row[0].v ? row[0].v.trim() : "";
             const value = row[1] && row[1].v ? row[1].v.trim() : "";
 
+            // Skip empty rows
+            if (!field.trim() && !value.trim()) {
+                continue;
+            }
+
+            // Skip rows without a proper header (when the first column is empty)
             if (!field.trim()) {
                 console.warn(`⚠️ Skipping row ${i} because it has no header.`);
                 continue;
@@ -67,112 +75,118 @@ function renderFactsheet(data) {
 
             console.log(`➡️ Processing Row ${i}: Field='${field}', Value='${value}'`);
 
-            // Check if this row is a continuation of the previous field
-            if (field === "" && value !== "") {
-                // If the A column is blank and B column has a value, continue with the previous field
-                switch (lastField) {
+            // Check if this row has a field and value to add
+            if (field && value) {
+                switch (field) {
+                    case "Image URL":
+                        console.log("✔️ Setting Hero Image:", value);
+                        let imageUrl = value ? value.trim() : "";
+                        heroImage = `<img src="${imageUrl}" class="hero-image" alt="Product Image" 
+                              onerror="this.onerror=null; this.src='https://via.placeholder.com/600x400?text=No+Image+Available';">`;
+                        lastField = "Image URL";
+                        break;
+                    
+                    case "Product Name":
+                        console.log("✔️ Product Name:", value);
+                        productName = `<h1 class="product-title">${value}</h1>`;
+                        lastField = "Product Name";
+                        break;
+
+                    case "Tagline":
+                        console.log("✔️ Tagline:", value);
+                        tagline = `<h3 class="product-tagline">${value}</h3>`;
+                        lastField = "Tagline";
+                        break;
+                    
+                    case "Description":
+                        console.log("✔️ Description:", value);
+                        description = `<p class="product-description">${value}</p>`;
+                        lastField = "Description";
+                        break;
+
                     case "What it Covers":
+                        console.log("✔️ What it Covers:", value);
                         features += `<li>${value}</li>`;
+                        lastField = "What it Covers";
                         break;
+
                     case "Ideal For":
+                        console.log("✔️ Ideal For:", value);
                         idealFor += `<li>${value}</li>`;
+                        lastField = "Ideal For";
                         break;
+
+                    case "Unit Cost":
+                    case "Unit Price":
+                        console.log("✔️ Pricing:", value);
+                        pricing += `<strong>${field}:</strong> ${value}<br>`;
+                        lastField = "Unit Cost";
+                        break;
+
                     case "What is Excluded":
+                        console.log("✔️ What is Excluded:", value);
                         exclusions += `<li>${value}</li>`;
+                        lastField = "What is Excluded";
                         break;
+
                     case "Pros":
+                        console.log("✔️ Pros:", value);
                         pros += `<li>${value}</li>`;
+                        lastField = "Pros";
                         break;
+
                     case "Cons":
+                        console.log("✔️ Cons:", value);
                         cons += `<li>${value}</li>`;
+                        lastField = "Cons";
                         break;
+
+                    case "Frequently Asked Questions":
+                        console.log("✔️ FAQs:", value);
+                        faq += `<li>${value}</li>`;
+                        lastField = "FAQs";
+                        break;
+
+                    case "Terms and Conditions":
+                        console.log("✔️ Terms and Conditions:", value);
+                        terms += `<p>${value}</p>`;
+                        lastField = "Terms and Conditions";
+                        break;
+
+                    // Handle cases where the A column is blank but B contains content
                     default:
-                        console.warn(`⚠️ No continuation found for this field: ${lastField}`);
+                        if (value) {
+                            // Add to the previous section if the field is a continuation
+                            console.log(`➡️ Adding continuation for '${lastField}': ${value}`);
+                            switch (lastField) {
+                                case "What it Covers":
+                                    features += `<li>${value}</li>`;
+                                    break;
+                                case "Ideal For":
+                                    idealFor += `<li>${value}</li>`;
+                                    break;
+                                case "What is Excluded":
+                                    exclusions += `<li>${value}</li>`;
+                                    break;
+                                case "Pros":
+                                    pros += `<li>${value}</li>`;
+                                    break;
+                                case "Cons":
+                                    cons += `<li>${value}</li>`;
+                                    break;
+                                case "FAQs":
+                                    faq += `<li>${value}</li>`;
+                                    break;
+                                case "Terms and Conditions":
+                                    terms += `<p>${value}</p>`;
+                                    break;
+                                default:
+                                    console.warn(`⚠️ Unrecognized continuation for: ${lastField}`);
+                                    break;
+                            }
+                        }
                         break;
                 }
-                continue; // Skip this row and go to the next
-            }
-
-            // Regular processing for fields with content in both A and B columns
-            switch (field) {
-                case "Image URL":
-                    console.log("✔️ Setting Hero Image:", value);
-                    let imageUrl = value ? value.trim() : "";
-                    heroImage = `<img src="${imageUrl}" class="hero-image" alt="Product Image" 
-                          onerror="this.onerror=null; this.src='https://via.placeholder.com/600x400?text=No+Image+Available';">`;
-                    lastField = "Image URL"; // Update lastField to track it
-                    break;
-                
-                case "Product Name":
-                    console.log("✔️ Product Name:", value);
-                    productName = `<h1 class="product-title">${value}</h1>`;
-                    lastField = "Product Name";
-                    break;
-                
-                case "Tagline":
-                    console.log("✔️ Tagline:", value);
-                    tagline = `<h3 class="product-tagline">${value}</h3>`;
-                    lastField = "Tagline";
-                    break;
-                
-                case "Description":
-                    console.log("✔️ Description:", value);
-                    description = `<p class="product-description">${value}</p>`;
-                    lastField = "Description";
-                    break;
-                
-                case "What it Covers":
-                    console.log("✔️ What it Covers:", value);
-                    features += `<li>${value}</li>`;
-                    lastField = "What it Covers"; // Track this field for continuation
-                    break;
-                
-                case "Ideal For":
-                    console.log("✔️ Ideal For:", value);
-                    idealFor += `<li>${value}</li>`;
-                    lastField = "Ideal For"; // Track this field for continuation
-                    break;
-                
-                case "Unit Cost":
-                case "Unit Price":
-                    console.log("✔️ Pricing:", value);
-                    pricing += `<strong>${field}:</strong> ${value}<br>`;
-                    lastField = "Pricing";
-                    break;
-                
-                case "What is Excluded":
-                    console.log("✔️ What is Excluded:", value);
-                    exclusions += `<li>${value}</li>`;
-                    lastField = "What is Excluded"; // Track this field for continuation
-                    break;
-                
-                case "Pros":
-                    console.log("✔️ Pros:", value);
-                    pros += `<li>${value}</li>`;
-                    lastField = "Pros"; // Track this field for continuation
-                    break;
-                
-                case "Cons":
-                    console.log("✔️ Cons:", value);
-                    cons += `<li>${value}</li>`;
-                    lastField = "Cons"; // Track this field for continuation
-                    break;
-                
-                case "Frequently Asked Questions":
-                    console.log("✔️ FAQs:", value);
-                    faq += `<li>${value}</li>`;
-                    lastField = "FAQs";
-                    break;
-                
-                case "Terms and Conditions":
-                    console.log("✔️ Terms and Conditions:", value);
-                    terms += `<p>${value}</p>`;
-                    lastField = "Terms and Conditions";
-                    break;
-
-                default:
-                    console.warn(`⚠️ Unrecognized Field: '${field}' with Value: '${value}'`);
-                    break;
             }
         }
 
