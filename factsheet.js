@@ -1,5 +1,5 @@
-// FACTSHEET SCRIPT VERSION: 2.2.3
-console.log("🚀 FACTSHEET SCRIPT VERSION: 2.2.3");
+// FACTSHEET SCRIPT VERSION: 2.2.4
+console.log("🚀 FACTSHEET SCRIPT VERSION: 2.2.4");
 
 const SPREADSHEET_ID = "19U1S1RD2S0dY_zKgE2CPmTp-5O4VUSfXCCC0qLg0oq0"; 
 const API_KEY = "AIzaSyBm8quffA_U1BTUnbBxXeLKuHYyEzLFX7E"; 
@@ -49,11 +49,10 @@ function renderFactsheet(data) {
     }
 
     let heroImage = '', productName = '', tagline = '', description = '', 
-        features = '', idealFor = '', pricing = '', exclusions = '', 
-        pros = '', cons = '', faq = '', terms = '';
+        features = '', idealFor = '', delivery = '', exclusions = '', 
+        pros = '', cons = '', faq = '', terms = '', pricing = '';
 
     let lastField = ''; // Track the last field for continuation
-    let currentList = ''; // Used to track multi-line items
     let skipRow = false; // Flag to skip rows without content
 
     if (data && data.length > 0) {
@@ -120,13 +119,19 @@ function renderFactsheet(data) {
                     case "Unit Price":
                         console.log("✔️ Pricing:", value);
                         pricing += `<strong>${field}:</strong> ${value}<br>`;
-                        lastField = "Unit Cost";
+                        lastField = "Pricing";
                         break;
 
                     case "What is Excluded":
                         console.log("✔️ What is Excluded:", value);
                         exclusions += `<li>${value}</li>`;
                         lastField = "What is Excluded";
+                        break;
+
+                    case "How It Is Delivered":
+                        console.log("✔️ How It Is Delivered:", value);
+                        delivery = `<p class="product-delivery">${value}</p>`;
+                        lastField = "How It Is Delivered";
                         break;
 
                     case "Pros":
@@ -179,6 +184,9 @@ function renderFactsheet(data) {
                                     break;
                                 case "Terms and Conditions":
                                     terms += `<p>${value}</p>`;
+                                    break;
+                                case "How It Is Delivered":
+                                    delivery += `<p class="product-delivery">${value}</p>`;
                                     break;
                                 default:
                                     console.warn(`⚠️ Unrecognized continuation for: ${lastField}`);
@@ -233,6 +241,9 @@ function renderFactsheet(data) {
 
                     <tr><td colspan="2" class="section-title footer">🔗 Terms & Conditions | Contact Info</td></tr>
                     <tr><td colspan="2">${terms}</td></tr>
+
+                    <tr><td colspan="2" class="section-title">How It Is Delivered</td></tr>
+                    <tr><td colspan="2">${delivery}</td></tr>
                 </table>
             </div>
         `;
