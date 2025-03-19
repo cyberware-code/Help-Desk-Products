@@ -1,5 +1,5 @@
-// FACTSHEET SCRIPT VERSION: 2.1.4
-console.log("🚀 FACTSHEET SCRIPT VERSION: 2.1.4");
+// FACTSHEET SCRIPT VERSION: 2.2.1
+console.log("🚀 FACTSHEET SCRIPT VERSION: 2.2.1");
 
 const SPREADSHEET_ID = "19U1S1RD2S0dY_zKgE2CPmTp-5O4VUSfXCCC0qLg0oq0"; 
 const API_KEY = "AIzaSyBm8quffA_U1BTUnbBxXeLKuHYyEzLFX7E"; 
@@ -38,13 +38,6 @@ async function fetchSheetData(sheetName) {
         console.error("❌ Error fetching sheet data:", error);
     }
 }
-
-document.addEventListener("DOMContentLoaded", () => {
-    const sheetName = "Pay As You Go";
-    console.log(`Loading factsheet for: '${sheetName}'`);
-    fetchSheetData(sheetName);
-});
-
 function renderFactsheet(data) {
     console.log("📌 Processing Data for Rendering:", data);
 
@@ -57,7 +50,7 @@ function renderFactsheet(data) {
 
     let heroImage = '', productName = '', tagline = '', description = '', 
         features = '', idealFor = '', pricing = '', exclusions = '', 
-        pros = '', cons = '', faq = '', terms = '';
+        pros = '', cons = '', faq = '', terms = '', productType = '', deliveryMethod = '';
 
     if (data && data.length > 0) {
         for (let i = 0; i < data.length; i++) {
@@ -97,7 +90,7 @@ function renderFactsheet(data) {
                     break;
                 
                 case "Ideal For":
-                    idealFor += `<li>${value}</li>`;
+                    idealFor += value.trim() ? `<li>${value}</li>` : `<li>No specific ideal users specified.</li>`;
                     break;
                 
                 case "Unit Cost":
@@ -123,6 +116,14 @@ function renderFactsheet(data) {
                 
                 case "Terms and Conditions":
                     terms += `<p>${value}</p>`;
+                    break;
+
+                case "Product Type":
+                    productType = `<p class="product-type">${value}</p>`;
+                    break;
+                
+                case "How It Is Delivered":
+                    deliveryMethod = `<p class="product-delivery">${value}</p>`;
                     break;
 
                 default:
@@ -168,6 +169,18 @@ function renderFactsheet(data) {
                         <td><ul>${pros}</ul></td>
                         <td><ul>${cons}</ul></td>
                     </tr>
+
+                    <tr><td colspan="2" class="section-title">❓ FAQs</td></tr>
+                    <tr><td colspan="2"><ul>${faq}</ul></td></tr>
+
+                    <tr><td colspan="2" class="section-title footer">🔗 Terms & Conditions | Contact Info</td></tr>
+                    <tr><td colspan="2">${terms}</td></tr>
+
+                    <tr><td colspan="2" class="section-title">Product Type</td></tr>
+                    <tr><td colspan="2">${productType}</td></tr>
+
+                    <tr><td colspan="2" class="section-title">How It Is Delivered</td></tr>
+                    <tr><td colspan="2">${deliveryMethod}</td></tr>
                 </table>
             </div>
         `;
