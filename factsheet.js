@@ -1,12 +1,20 @@
-// FACTSHEET SCRIPT VERSION: 2.1.0
-console.log("🚀 FACTSHEET SCRIPT VERSION: 2.1.0");
+// FACTSHEET SCRIPT VERSION: 2.1.1
+console.log("🚀 FACTSHEET SCRIPT VERSION: 2.1.1");
 
 function fetchSheetData(sheetName) {
-    // Define your Google Sheets URL here
-    const sheetURL = `https://docs.google.com/spreadsheets/d/your_spreadsheet_id/gviz/tq?tqx=out:json&tq=&gid=${sheetName}`;
+    // Ensure you have the correct Spreadsheet ID in the URL
+    const sheetURL = `https://docs.google.com/spreadsheets/d/19U1S1RD2S0dY_zKgE2CPmTp-5O4VUSfXCCC0qLg0oq0/gviz/tq?tqx=out:json&tq=&gid=1238020069`;
+
+    // Log the URL for debugging
+    console.log("Fetching data from URL:", sheetURL);
 
     fetch(sheetURL)
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
             console.log("📊 Data Retrieved:", data);
             renderFactsheet(data.table.rows); // Pass the rows to the render function
@@ -15,6 +23,7 @@ function fetchSheetData(sheetName) {
             console.error("❌ Error fetching sheet data:", error);
         });
 }
+
 
 function renderFactsheet(data) {
     console.log("📌 Processing Data for Rendering:", data);
