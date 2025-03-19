@@ -1,6 +1,32 @@
 // FACTSHEET SCRIPT VERSION: 2.0.0
-console.log("🚀 FACTSHEET SCRIPT VERSION: 2.0.0");
+console.log("🚀 FACTSHEET SCRIPT VERSION: 2.0.0 LOADED");
 
+// Function to fetch data from Google Sheets
+function fetchSheetData(sheetUrl, callback) {
+    console.log("📢 Fetching data from Google Sheets:", sheetUrl);
+
+    fetch(sheetUrl)
+        .then(response => response.text())
+        .then(text => {
+            const jsonText = text.match(/google.visualization.Query.setResponse\(([\s\S]*?)\);/);
+            if (!jsonText || jsonText.length < 2) {
+                throw new Error("Invalid response format from Google Sheets.");
+            }
+            const jsonData = JSON.parse(jsonText[1]);
+
+            if (!jsonData.table || !jsonData.table.rows) {
+                throw new Error("No table data found in the response.");
+            }
+
+            console.log("📥 Successfully retrieved data:", jsonData.table.rows.length, "rows.");
+            callback(jsonData.table.rows);
+        })
+        .catch(error => {
+            console.error("❌ Error fetching sheet data:", error);
+        });
+}
+
+// Function to render the factsheet
 function renderFactsheet(data) {
     console.log("📌 Processing Data for Rendering:", data);
 
@@ -146,3 +172,7 @@ function renderFactsheet(data) {
         factsheetDiv.innerHTML = '<p>No data found in the Google Sheet.</p>';
     }
 }
+
+// Example usage (Replace 'YOUR_GOOGLE_SHEET_URL' with the actual URL)
+const sheetUrl = 'YOUR_GOOGLE_SHEET_URL';
+fetchSheetData(sheetUrl, renderFactsheet);
