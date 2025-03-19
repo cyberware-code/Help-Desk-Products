@@ -1,127 +1,145 @@
-console.log("🚀 FACTSHEET SCRIPT LOADED");
+function renderFactsheet(data) {
+    console.log("📌 Processing Data for Rendering:", data);
 
-// Constants
-const SHEET_NAME = "Pay As You Go";
-const SPREADSHEET_ID = "19U1S1RD2S0dY_zKgE2CPmTp-5O4VUSfXCCC0qLg0oq0";
-const BASE_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&tq=&gid=`;
-
-// Global Variables
-let factsheetData = {};
-
-// Fetch Data from Google Sheets
-async function fetchFactsheet() {
-    try {
-        console.log(`📢 Fetching data for sheet: ${SHEET_NAME}`);
-        
-        const url = BASE_URL + "1238020069";  // Replace with correct GID
-        console.log(`📡 Fetching Data from URL: ${url}`);
-        
-        const response = await fetch(url);
-        const text = await response.text();
-        const jsonData = JSON.parse(text.substring(47, text.length - 2));
-        
-        console.log("📥 Raw Response from Google Sheets:", jsonData);
-        processFactsheet(jsonData);
-    } catch (error) {
-        console.error("❌ Error fetching data:", error);
-    }
-}
-
-// Process Data
-function processFactsheet(jsonData) {
-    try {
-        console.log("📊 Processing Data...");
-        const rows = jsonData.table.rows;
-
-        rows.forEach(row => {
-            if (!row.c[0] || !row.c[1]) return;
-            
-            let field = row.c[0].v.trim();
-            let value = row.c[1].v ? row.c[1].v.trim() : "";
-            
-            factsheetData[field] = factsheetData[field] || [];
-            factsheetData[field].push(value);
-        });
-
-        console.log("✅ Successfully processed factsheet data:", factsheetData);
-        renderFactsheet();
-    } catch (error) {
-        console.error("❌ Error processing factsheet data:", error);
-    }
-}
-
-// Render Factsheet HTML
-function renderFactsheet() {
-    console.log("📥 Calling renderFactsheet()");
-
-    let html = `
-        <div class="factsheet">
-            <div class="hero-section">
-    `;
-
-    // Image
-    if (factsheetData["Image URL"]) {
-        let imageUrl = factsheetData["Image URL"][0].trim();
-        console.log("✔️ Setting Hero Image:", imageUrl);
-        html += `<img src="${imageUrl}" class="hero-image" alt="Product Image"
-                  onerror="this.onerror=null; this.src='https://via.placeholder.com/600x400?text=No+Image+Available';">`;
+    let html = "";
+    const factsheetDiv = document.getElementById('factsheet');
+    if (!factsheetDiv) {
+        console.error("❌ Error: #factsheet div not found in index.html");
+        return;
     }
 
-    // Product Name & Tagline
-    html += `
-            <div class="title-container">
-                <h1 class="product-title">${factsheetData["Product Name"] ? factsheetData["Product Name"][0] : ""}</h1>
-                <h3 class="product-tagline">${factsheetData["Tagline"] ? factsheetData["Tagline"][0] : ""}</h3>
+    let heroImage = '', productName = '', tagline = '', description = '', 
+        features = '', idealFor = '', pricing = '', exclusions = '', 
+        pros = '', cons = '', faq = '', terms = '';
+
+    if (data && data.length > 0) {
+        for (let i = 0; i < data.length; i++) {
+            const row = data[i].c || [];
+            const field = row[0] && row[0].v ? row[0].v.trim() : "";
+            const value = row[1] && row[1].v ? row[1].v.trim() : "";
+
+            if (!field.trim()) {
+                console.warn(`⚠️ Skipping row ${i} because it has no header.`);
+                continue;
+            }
+
+            console.log(`➡️ Processing Row ${i}: Field='${field}', Value='${value}'`);
+
+            switch (field) {
+                case "Image URL":
+                    console.log("✔️ Setting Hero Image:", value);
+                    let imageUrl = value ? value.trim() : "";
+                    heroImage = `<img src="${imageUrl}" class="hero-image" alt="Product Image" 
+                          onerror="this.onerror=null; this.src='https://via.placeholder.com/600x400?text=No+Image+Available';">`;
+                    break;
+                
+                case "Product Name":
+                    productName = `<h1 class="product-title">${value}</h1>`;
+                    break;
+                
+                case "Tagline":
+                    tagline = `<h3 class="product-tagline">${value}</h3>`;
+                    break;
+                
+                case "Description":
+                    description = `<p class="product-description">${value}</p>`;
+                    break;
+                
+                case "What it Covers":
+                    features += `<li>${value}</li>`;
+                    break;
+                
+                case "Ideal For":
+                    idealFor += `<li>${value}</li>`;
+                    break;
+                
+                case "Unit Cost":
+                case "Unit Price":
+                    pricing += `<strong>${field}:</strong> ${value}<br>`;
+                    break;
+                
+                case "What is Excluded":
+                    exclusions += `<li>${value}</li>`;
+                    break;
+                
+                case "Pros":
+                    pros += `<li>${value}</li>`;
+                    break;
+                
+                case "Cons":
+                    cons += `<li>${value}</li>`;
+                    break;
+                
+                case "Frequently Asked Questions":
+                    faq += `<li>${value}</li>`;
+                    break;
+                
+                case "Terms and Conditions":
+                    terms += `<p>${value}</p>`;
+                    break;
+
+                default:
+                    console.warn(`⚠️ Unrecognized Field: '${field}' with Value: '${value}'`);
+                    break;
+            }
+        }
+
+        html = `
+            <div class="factsheet">
+                <div class="hero-section">
+                    ${heroImage}
+                    <div class="title-container">
+                        ${productName}
+                        ${tagline}
+                    </div>
+                </div>
+
+                <table class="product-table">
+                    <tr><td colspan="2" class="section-title">Description</td></tr>
+                    <tr><td colspan="2">${description}</td></tr>
+
+                    <tr>
+                        <td class="section-title">✅ Key Features</td>
+                        <td class="section-title">📌 Ideal For</td>
+                    </tr>
+                    <tr>
+                        <td><ul>${features}</ul></td>
+                        <td><ul>${idealFor}</ul></td>
+                    </tr>
+
+                    <tr><td colspan="2" class="section-title">💲 Pricing</td></tr>
+                    <tr><td colspan="2">${pricing}</td></tr>
+
+                    <tr><td colspan="2" class="section-title">❌ What is Excluded</td></tr>
+                    <tr><td colspan="2"><ul>${exclusions}</ul></td></tr>
+
+                    <tr>
+                        <td class="section-title">✅ Pros</td>
+                        <td class="section-title">❌ Cons</td>
+                    </tr>
+                    <tr>
+                        <td><ul>${pros}</ul></td>
+                        <td><ul>${cons}</ul></td>
+                    </tr>
+
+                    <tr><td colspan="2" class="section-title">❓ FAQs</td></tr>
+                    <tr><td colspan="2"><ul>${faq}</ul></td></tr>
+
+                    <tr><td colspan="2" class="section-title footer">🔗 Terms & Conditions | Contact Info</td></tr>
+                    <tr><td colspan="2">${terms}</td></tr>
+                </table>
             </div>
-        </div>
-    `;
-
-    // Description
-    if (factsheetData["Description"]) {
-        html += `
-            <table class="product-table">
-                <tr><td colspan="2" class="section-title">Description</td></tr>
-                <tr><td colspan="2"><p class="product-description">${factsheetData["Description"][0]}</p></td></tr>
         `;
+
+        console.log("🚀 Final Generated HTML Output:", html);
+
+        if (!html.trim()) {
+            console.error("❌ HTML content is empty before rendering!");
+        } else {
+            factsheetDiv.innerHTML = html;
+        }
+    } else {
+        console.error("❌ No valid data found.");
+        factsheetDiv.innerHTML = '<p>No data found in the Google Sheet.</p>';
     }
-
-    // Pricing
-    if (factsheetData["Unit Cost"] || factsheetData["Unit Price"]) {
-        html += `
-            <tr><td colspan="2" class="section-title">💲 Pricing</td></tr>
-            <tr><td colspan="2">
-                <strong>Unit Cost:</strong> ${factsheetData["Unit Cost"] ? factsheetData["Unit Cost"][0] : "N/A"}<br>
-                <strong>Unit Price:</strong> ${factsheetData["Unit Price"] ? factsheetData["Unit Price"][0] : "N/A"}<br>
-            </td></tr>
-        `;
-    }
-
-    // Pros & Cons
-    if (factsheetData["Pros"] || factsheetData["Cons"]) {
-        html += `
-            <tr><td colspan="2" class="section-title">✅ Pros & ❌ Cons</td></tr>
-            <tr>
-                <td class="pros-column">
-                    <h3>✅ Pros</h3>
-                    <ul>${factsheetData["Pros"] ? factsheetData["Pros"].map(pro => `<li>${pro}</li>`).join('') : ""}</ul>
-                </td>
-                <td class="cons-column">
-                    <h3>❌ Cons</h3>
-                    <ul>${factsheetData["Cons"] ? factsheetData["Cons"].map(con => `<li>${con}</li>`).join('') : ""}</ul>
-                </td>
-            </tr>
-        `;
-    }
-
-    // Footer
-    html += `
-            <tr><td colspan="2" class="section-title footer">🔗 Terms & Conditions | Contact Info</td></tr>
-            <tr><td colspan="2"><p class="product-terms"></p></td></tr>
-        </table>
-    </div>`;
-
-    document.getElementById("factsheet-container").innerHTML = html;
 }
-
-// Initialize
-fetchFactsheet();
